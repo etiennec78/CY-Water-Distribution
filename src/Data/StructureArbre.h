@@ -3,7 +3,7 @@
 
 typedef struct UsineNode{ // AVL des usines
       char *id_usines;       //clé de recherche (identifiant de l'usine)
-      long long capacite_max; // utilisations de long long parce que les quantités sont longues et on évite l'overflow
+      long long capacite_max; // utilisations de long long parce que les quantités sont grandes et on évite l'overflow
       long long volume_capte;
       long long volume_traite;
 
