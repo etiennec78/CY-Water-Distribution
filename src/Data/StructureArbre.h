@@ -7,8 +7,8 @@ typedef struct UsineNode{ // AVL des usines
       long long volume_capte;
       long long volume_traite;
 
-      struct UsineNode* gauche; // pointeur gauche
-      struct UsineNode* droite; // pointeur droite
+      struct UsineNode* gauche; 
+      struct UsineNode* droite; 
 
       int hauteur; 
 }UsineNode;
