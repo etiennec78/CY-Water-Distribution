@@ -26,6 +26,9 @@
 //     return nbLignes;
 //}
 
+
+
+
 FacilityType conversionCharToType(char* mot){
     char* type[19] = {"SOURCE", "SPRING", "POND", "CATCHMENT", "WELL", "RESURGENCE", "INTAKE", "BOREHOLE", "FOUNTAIN", "RESERVOIR", "FORAGE", "WELL_FIELDS", "TANK", "UNIT", "MODULE", "FACILITY_COMPLEX", "STORAGE", "JUNCTION", "CUST"};
     FacilityType facilityType[19] = {SOURCE, SPRING, POND, CATCHMENT, WELL, RESURGENCE, INTAKE, BOREHOLE, FOUNTAIN, RESERVOIR, FORAGE, WELL_FIELDS, TANK, UNIT, MODULE, FACILITY_COMPLEX, STORAGE, JUNCTION, CUST};
@@ -35,196 +38,116 @@ FacilityType conversionCharToType(char* mot){
             return facilityType[i];
         }
     }
-    return -1;
+    return TYPE_UNKNOWN;
 }
 
-Capture* parserTabCapture(){
-    FILE* fichier = NULL;
-    fichier = fopen("c-wildwater_v3.dat", "r");
+LineType detectLineType(char* col1, char* col2, char* col3, char* col4, char* col5) {
 
-    if(fichier == NULL){
-        printf("Can not open file");
-        exit(1);
+    if (strcmp(col1, "-") == 0 && strstr(col2, "Spring") != NULL && strstr(col3, "Facility complex") != NULL
+        && strcmp(col4, "-") != 0 && strcmp(col5, "-") != 0) {
+        return SOURCE_TO_FACTORY;
     }
 
-    Capture* tableau = malloc(sizeof(Capture));
-    if (tableau == NULL) {
-        printf("Memory allocation failed");
-        exit(1);
-    }
-    int j = 1;
-    int res;
-    char* upstream;
-    char* facility;
-    while(res=(fscanf(fichier, "-;%s %s;%s %s;%d;%f\n", upstream, tableau[j].upstreamID, facility, tableau[j].facilityID, &tableau[j].annualAmount, &tableau[j].leakPercentage))==6){
-        tableau[j].upstream = conversionCharToType(upstream);
-        tableau[j].facility = conversionCharToType(facility);
-        tableau = realloc(tableau, sizeof(Capture) * (j + 1));
-        if (tableau == NULL) {
-            printf("Memory reallocation failed");
-            exit(1);
-        }
-        j++;
+    if (strcmp(col1, "-") == 0 && strstr(col2, "Facility complex") != NULL
+        && strcmp(col3, "-") == 0 && strcmp(col4, "-") != 0 && strcmp(col5, "-") == 0) {
+        return FACTORY_ONLY;
     }
 
-    fclose(fichier);
-    return tableau;
-}
-
-
-
-Factory* parserTabFactory(){
-    FILE* fichier = NULL;
-    fichier = fopen("c-wildwater_v3.dat", "r");
-
-    if(fichier == NULL){
-        printf("Can not open file");
-        exit(1);
+    if (strcmp(col1, "-") == 0 && strstr(col2, "Facility complex") != NULL
+        && strstr(col3, "Storage") != NULL && strcmp(col4, "-") == 0 && strcmp(col5, "-") != 0) {
+        return FACTORY_TO_STORAGE;
     }
 
-    Factory* tableau = malloc(sizeof(Factory));
-    int j = 0;
-    int res;
-    char* facility;
-    while(res = fscanf(fichier, "-;%s %s;-;%d;-\n", facility, tableau[j].facilityID, &tableau[j].annualAmount)==3){
-        tableau[j].facility = conversionCharToType(facility);
-        j++;
-        tableau = realloc(tableau, sizeof(Factory) * (j + 1));
-        if (tableau == NULL) {
-            printf("Memory reallocation failed");
-            exit(1);
-        }
-        j++;
+    if (strstr(col1, "Facility complex") != NULL && strstr(col2, "Storage") != NULL
+        && strstr(col3, "Junction") != NULL && strcmp(col4, "-") == 0 && strcmp(col5, "-") != 0) {
+        return STORAGE_TO_JUNCTION;
     }
 
-    fclose(fichier);
-    return tableau;
+    if (strstr(col1, "Facility complex") != NULL && strstr(col2, "Junction") != NULL
+        && strstr(col3, "Service") != NULL && strcmp(col4, "-") == 0 && strcmp(col5, "-") != 0) {
+        return JUNCTION_TO_SERVICE;
+    }
+
+    if (strstr(col1, "Facility complex") != NULL && strstr(col2, "Service") != NULL
+        && strstr(col3, "Cust") != NULL && strcmp(col4, "-") == 0 && strcmp(col5, "-") != 0) {
+        return SERVICE_TO_CUST;
+    }
+
+    return UNKNOWN;
 }
 
 
-Storage* parserTabStorage(){
-    FILE* fichier = NULL;
-    fichier = fopen("c-wildwater_v3.dat", "r");
+Facility* parserLine(char* lineStr) {
+    char* col1 = strtok(lineStr, ";");
+    char* col2 = strtok(NULL, ";");
+    char* col3 = strtok(NULL, ";");
+    char* col4 = strtok(NULL, ";");
+    char* col5 = strtok(NULL, ";");
 
-    if(fichier == NULL){
-        printf("Can not open file");
-        exit(1);
+    Facility* facility = malloc(sizeof(Facility));
+    if (facility == NULL){
+        return NULL;
     }
 
-    Storage* tableau = malloc(sizeof(Storage));
-    int j = 0;
-    int res;
-    char* facility;
-    char* downstream;
-    while(res = fscanf(fichier, "-;%s %s;%s %s;-;%f\n", facility, tableau[j].facilityID, downstream, tableau[j].downstreamID, &tableau[j].leakPercentage)==5){
-        tableau[j].facility = conversionCharToType(facility);
-        tableau[j].downstream = conversionCharToType(downstream);
-        j++;
-        tableau = realloc(tableau, sizeof(Storage) * (j + 1));
-        if (tableau == NULL) {
-            printf("Memory reallocation failed");
-            exit(1);
-        }
-        j++;
+    LineType lineType = detectLineType(col1, col2, col3, col4, col5);
+
+    switch(lineType) {
+        case SOURCE_TO_FACTORY:
+            facility->type = conversionCharToType(col2);  // col2 = Spring
+            strcpy(facility->id, col2);
+            strcpy(facility->parent_id, col3);           // col3 = Facility complex
+            facility->volume = atof(col4);
+            facility->leak = atof(col5);
+            break;
+
+        case FACTORY_ONLY:
+            facility->type = conversionCharToType(col2);  // col2 = Facility complex
+            strcpy(facility->id, col2);
+            facility->parent_id[0] = '\0';                // Pas de parent
+            facility->volume = atof(col4);
+            facility->leak = 0;
+            break;
+
+        case FACTORY_TO_STORAGE:
+            facility->type = conversionCharToType(col3);  // col3 = Storage
+            strcpy(facility->id, col3);
+            strcpy(facility->parent_id, col2);           // col2 = Facility complex
+            facility->volume = atof(col4);
+            facility->leak = 0;
+            break;
+
+        case STORAGE_TO_JUNCTION:
+            facility->type = conversionCharToType(col3);  // col3 = Junction
+            strcpy(facility->id, col3);
+            strcpy(facility->parent_id, col2);           // col2 = Storage
+            facility->volume = atof(col4);
+            facility->leak = 0;
+            break;
+
+        case JUNCTION_TO_SERVICE:
+            facility->type = conversionCharToType(col3);  // col3 = Service
+            strcpy(facility->id, col3);
+            strcpy(facility->parent_id, col2);           // col2 = Junction
+            facility->volume = atof(col4);
+            facility->leak = 0;
+            break;
+
+        case SERVICE_TO_CUST:
+            facility->type = conversionCharToType(col3);  // col3 = Cust
+            strcpy(facility->id, col3);
+            strcpy(facility->parent_id, col2);           // col2 = Service
+            facility->volume = atof(col4);
+            facility->leak = 0;
+            break;
+
+        default:
+            facility->type = TYPE_UNKNOWN;
+            facility->id[0] = '\0';
+            facility->parent_id[0] = '\0';
+            facility->volume = 0;
+            facility->leak = 0;
+            break;
     }
 
-    fclose(fichier);
-    return tableau;
+    return facility;
 }
-
-principalDistribution* parserTabPrincipalDistribution(){
-    FILE* fichier = NULL;
-    fichier = fopen("c-wildwater_v3.dat", "r");
-
-    if(fichier == NULL){
-        printf("Can not open file");
-        exit(1);
-    }
-
-    principalDistribution* tableau = malloc(sizeof(principalDistribution));
-    int j = 0;
-    int res;
-    char* facility;
-    char* downstream;
-    char* junction;
-    while(res = fscanf(fichier, "%s %s;%s %s;%s %s;-;%f\n", facility, tableau[j].facilityID, downstream, tableau[j].downstreamID, junction, tableau[j].junctionID, &tableau[j].leakPercentage)==7){
-        tableau[j].facility = conversionCharToType(facility);
-        tableau[j].downstream = conversionCharToType(downstream);
-        tableau[j].junction = conversionCharToType(junction);
-        j++;
-        tableau = realloc(tableau, sizeof(principalDistribution) * (j + 1));
-        if (tableau == NULL) {
-            printf("Memory reallocation failed");
-            exit(1);
-        }
-        j++;
-    }
-
-    fclose(fichier);
-    return tableau;
-}
-
-secondaryDistribution* parserTabSecondaryDistribution(){
-    FILE* fichier = NULL;
-    fichier = fopen("c-wildwater_v3.dat", "r");
-
-    if(fichier == NULL){
-        printf("Can not open file");
-        exit(1);
-    }
-
-    secondaryDistribution* tableau = malloc(sizeof(secondaryDistribution));
-    int j = 0;
-    int res;
-    char* facility;
-    char* downstream;
-    char* junction;
-    while(res = fscanf(fichier, "%s %s;%s %s;%s %s;-;%f\n", facility, tableau[j].facilityID, downstream, tableau[j].downstreamID, junction, tableau[j].junctionID, &tableau[j].leakPercentage)==7){
-        tableau[j].facility = conversionCharToType(facility);
-        tableau[j].downstream = conversionCharToType(downstream);
-        tableau[j].junction = conversionCharToType(junction);
-        j++;
-        tableau = realloc(tableau, sizeof(secondaryDistribution) * (j + 1));
-        if (tableau == NULL) {
-            printf("Memory reallocation failed");
-            exit(1);
-        }
-        j++;
-    }
-
-    fclose(fichier);
-    return tableau;
-}
-
-connexion* parserTabConnexion(){
-    FILE* fichier = NULL;
-    fichier = fopen("c-wildwater_v3.dat", "r");
-
-    if(fichier == NULL){
-        printf("Can not open file");
-        exit(1);
-    }
-
-    connexion* tableau = malloc(sizeof(connexion));
-    int j = 0;
-    int res;
-    char* facility;
-    char* downstream;
-    char* junction;
-    while(res = fscanf(fichier, "%s %s;%s %s;%s %s;-;%f\n", facility, tableau[j].facilityID, downstream, tableau[j].downstreamID, junction, tableau[j].junctionID, &tableau[j].leakPercentage)==7){
-        tableau[j].facility = conversionCharToType(facility);
-        tableau[j].downstream = conversionCharToType(downstream);
-        tableau[j].junction = conversionCharToType(junction);
-        j++;
-        tableau = realloc(tableau, sizeof(connexion) * (j + 1));
-        if (tableau == NULL) {
-            printf("Memory reallocation failed");
-            exit(1);
-        }
-        j++;
-    }
-
-    fclose(fichier);
-    return tableau;
-}
-

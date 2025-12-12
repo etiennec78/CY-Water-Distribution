@@ -2,6 +2,7 @@
 #define DATA_H
 
 typedef enum {
+    NONE,
     SOURCE,
     SPRING,
     POND,
@@ -21,74 +22,29 @@ typedef enum {
     STORAGE,
     JUNCTION,
     CUST,
+    TYPE_UNKNOWN ,
 } FacilityType;
 
-typedef struct {
-    FacilityType upstream;
-    char* upstreamID;
+typedef struct Facility {
+    FacilityType type;   
+    char id[50];         // identifiant unique
+    char parent_id[50];  // id de l'acteur amont
+    double volume;      
+    double leak;         
+} Facility;
 
-    FacilityType facility;
-    char* facilityID;
-    
-    int annualAmount;
-    float leakPercentage;
-} Capture;
-
- typedef struct {
-    FacilityType facility;
-    char* facilityID;
-    
-    int annualAmount;
-} Factory;
-
- typedef struct {
-    FacilityType facility;
-    char* facilityID;
-
-    FacilityType downstream;
-    char* downstreamID;
-
-    float leakPercentage;
-} Storage;
-
- typedef struct {
-    FacilityType facility;        //usine qui a traité l'eau de ce tronçon
-    char* facilityID;
-
-    FacilityType downstream;
-    char* downstreamID;
-
-    FacilityType junction;
-    char* junctionID;
-
-    float leakPercentage;
-} principalDistribution;
-
- typedef struct {
-    FacilityType facility;        //usine qui a traité l'eau de ce tronçon
-    char* facilityID;
-
-    FacilityType downstream;
-    char* downstreamID;
-
-    FacilityType junction;
-    char* junctionID;
-
-    float leakPercentage;
-} secondaryDistribution;
+typedef enum {
+    UNKNOWN,
+    SOURCE_TO_FACTORY,
+    FACTORY_ONLY,
+    FACTORY_TO_STORAGE,
+    STORAGE_TO_JUNCTION,
+    JUNCTION_TO_SERVICE,
+    SERVICE_TO_CUST
+} LineType;
 
 
-typedef struct {
-    FacilityType facility;        //usine qui a traité l'eau de ce tronçon
-    char* facilityID;
 
-    FacilityType downstream;
-    char* downstreamID;
 
-    FacilityType junction;
-    char* junctionID;
-
-    float leakPercentage;
-} connexion;
 
 #endif
