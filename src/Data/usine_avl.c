@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> 
-#include "structure.h"
-#include "usine_avl.h"       
+#include "Data.h"       
 
 #define TYPE_CAPACITE_MAX 1 
 #define TYPE_SOURCE_USINE 2 
@@ -12,30 +11,30 @@ int max(int a, int b) {
     return (a > b) ? a : b;
 }
 
-int get_hauteur_node(UsineNode *n) {
+int get_hauteur_node(Facility *n) {
     if (n == NULL) {
         return 0; 
     }
     return n->hauteur;
 }
 
-int hauteur_usine(UsineNode* n){
+int hauteur_usine(Facility* n){
     if(n==NULL){
         return 0;
     }
     return 1 + max(hauteur_usine(n->gauche),hauteur_usine(n->droite));
 }
 
-int equilibrage(UsineNode* n){
+int equilibrage(Facility* n){
     if(n==NULL){
         return 0;
     }
     return hauteur_usine(n->droite) - hauteur_usine(n->gauche);
 }
 
-UsineNode *rotation_gauche_usine(UsineNode *a) {
-    UsineNode *b = a->droite;
-    UsineNode *T2 = b->gauche; 
+Facility *rotation_gauche_usine(Facility *a) {
+    Facility *b = a->droite;
+    Facility *T2 = b->gauche; 
 
     b->gauche = a;
     a->droite = T2; 
@@ -46,9 +45,9 @@ UsineNode *rotation_gauche_usine(UsineNode *a) {
     return b; 
 }
 
-UsineNode *rotation_droite_usine(UsineNode *a) {
-    UsineNode *b = a->gauche;
-    UsineNode *T2 = b->droite; 
+Facility *rotation_droite_usine(Facility *a) {
+    Facility *b = a->gauche;
+    Facility *T2 = b->droite; 
 
     b->droite = a;
     a->gauche = T2; 
@@ -59,17 +58,17 @@ UsineNode *rotation_droite_usine(UsineNode *a) {
     return b; 
 }
 
-UsineNode *rotation_droite_gauche_usine(UsineNode *n) {
+Facility *rotation_droite_gauche_usine(Facility *n) {
     n->droite = rotation_droite_usine(n->droite);
     return rotation_gauche_usine(n);
 }
 
-UsineNode *rotation_gauche_droite_usine(UsineNode *n) {
+Facility *rotation_gauche_droite_usine(Facility *n) {
     n->gauche = rotation_gauche_usine(n->gauche);
     return rotation_droite_usine(n);
 }
 
-UsineNode *equilibrer_arbre(UsineNode *n) {
+Facility *equilibrer_arbre(Facility *n) {
     if (n == NULL) return n;
 
     n->hauteur = max(get_hauteur_node(n->gauche), get_hauteur_node(n->droite)) + 1;
@@ -92,28 +91,29 @@ UsineNode *equilibrer_arbre(UsineNode *n) {
     return n;
 }
 
-UsineNode *nouvelle_usine(char *id, long long capacite_max) {
-    UsineNode *new_node = malloc(sizeof(UsineNode));
+Facility *nouvelle_usine(char *id, double capacite_max) {
+    Facility *new_node = malloc(sizeof(Facility));
     if (new_node == NULL) {
         return NULL;
     }
     
-    new_node->id_usines = strdup(id); 
-    if (new_node->id_usines == NULL) {
-        free(new_node);
-        return NULL;
-    }
+    strncpy(new_node->id, id, 49); 
+    new_node->id[49] = '\0';
+
+    new_node->volume = 0.0;
+    new_node->leak = 0.0;
+    new_node->parent_id[0] = '\0';
     
     new_node->capacite_max = capacite_max;
     new_node->gauche = NULL;
     new_node->droite = NULL;
-    new_node->volume_traite = 0;
-    new_node->volume_capte = 0;
+    new_node->volume_traite = 0.0;
+    new_node->volume_capte = 0.0;
     new_node->hauteur = 1;
     
     return new_node;
 }
-UsineNode *inserer_usine(UsineNode *racine, char *id, long long vol_info, float pourcentage_fuite, int type_ligne) {
+Facility *inserer_usine(Facility *racine, char *id, double vol_info, double pourcentage_fuite, int type_ligne) {
     if (racine == NULL) {
         if (type_ligne == TYPE_CAPACITE_MAX) {
             return nouvelle_usine(id, vol_info);
@@ -124,7 +124,7 @@ UsineNode *inserer_usine(UsineNode *racine, char *id, long long vol_info, float 
         return NULL; 
     }
 
-    int cmp = strcmp(id, racine->id_usines);
+    int cmp = strcmp(id, racine->id);
 
     if (cmp < 0) {
         racine->gauche = inserer_usine(racine->gauche, id, vol_info, pourcentage_fuite, type_ligne);
@@ -135,7 +135,7 @@ UsineNode *inserer_usine(UsineNode *racine, char *id, long long vol_info, float 
             racine->capacite_max = vol_info;
         } else if (type_ligne == TYPE_SOURCE_USINE) {
             racine->volume_capte += vol_info; 
-            long long volume_net_traite = vol_info *(1.0 -(pourcentage_fuite/100.0));
+            double volume_net_traite = vol_info *(1.0 -(pourcentage_fuite/100.0));
             racine->volume_traite += volume_net_traite;
         } 
         return racine;
@@ -144,15 +144,12 @@ UsineNode *inserer_usine(UsineNode *racine, char *id, long long vol_info, float 
     return equilibrer_arbre(racine);
 }
 
-void free_avl_usine(UsineNode* racine){
+void free_avl_usine(Facility* racine){
     if(racine ==NULL){
-        return NULL;
+        return;
     }
     free_avl_usine(racine->gauche);
     free_avl_usine(racine->droite);
-    if (racine->id_usines != NULL) {
-        free(racine->id_usines);
-    }
     free(racine);
 }
 

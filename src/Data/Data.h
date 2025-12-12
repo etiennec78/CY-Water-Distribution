@@ -25,13 +25,30 @@ typedef enum {
     TYPE_UNKNOWN ,
 } FacilityType;
 
-typedef struct Facility {
+/*typedef struct Facility {
     FacilityType type;   
     char id[50];         // identifiant unique
     char parent_id[50];  // id de l'acteur amont
     double volume;      
     double leak;         
-} Facility;
+} Facility;*/
+
+typedef struct Facility{
+    FacilityType type;
+    char id[50];
+    char parent_id[50];
+    double volume;
+    double leak;
+
+    double capacite_max;
+    double volume_traite;
+    double volume_capte;
+    
+    struct Facility* droite;
+    struct Facility* gauche;
+
+    int hauteur;
+}Facility;
 
 typedef enum {
     UNKNOWN,
@@ -42,6 +59,15 @@ typedef enum {
     JUNCTION_TO_SERVICE,
     SERVICE_TO_CUST
 } LineType;
+
+typedef struct Resultat_Histo{
+    char* id;
+    double capacite_max; 
+    double volume_traite;
+    double volume_capte;
+}Resultat_Histo;
+
+
 
 
 

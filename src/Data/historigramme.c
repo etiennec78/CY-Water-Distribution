@@ -2,32 +2,32 @@
 #include <stdlib.h>
 #include <string.h>
 #include "usine_avl.h"
-#include "structure.h"
+#include "Data.h"
 #include "historigramme.h"
 
 
 
-UsineNode* recherche_usines_histo(UsineNode* node, char* id){
+Facility* recherche_usines_histo(Facility* node, char* id_search){
     if(node == NULL){
         return NULL;
     }
-    int comparaison = strcmp(id,node->id_usines);
+    int comparaison = strcmp(node->id,id_search);
     
     if(comparaison<0){
-        return recherche_usines_histo(node->gauche,id);
+        return recherche_usines_histo(node->gauche,id_search);
     }
     else if(comparaison>0){
-        return recherche_usines_histo(node->droite,id);
+        return recherche_usines_histo(node->droite,id_search);
     }
     else{
         return node;
     }
 }
 
-Resultat_Histo* recup_histo_data(UsineNode* node, char* id){
-    UsineNode* usine_trouvee = recherche_usines_histo(node, id);
+Resultat_Histo* recup_histo_data(Facility* node, char* id_search){
+    Facility* usine_trouve = recherche_usines_histo(node, id_search);
     
-    if(usine_trouvee == NULL){
+    if(usine_trouve == NULL){
         return NULL;
     }
     Resultat_Histo* data = malloc(sizeof(Resultat_Histo));
@@ -35,26 +35,26 @@ Resultat_Histo* recup_histo_data(UsineNode* node, char* id){
         return NULL;
     }
 
-    data->id = strdup(id);
+    data->id = strdup(id_search);
     if(data->id == NULL){
         free(data);
         return NULL;
     }
 
-    data->capacite_max = usine_trouvee->capacite_max;
-    data->volume_capte = usine_trouvee->volume_capte;
-    data->volume_traite = usine_trouvee->volume_traite;
+    data->capacite_max = usine_trouve->capacite_max;
+    data->volume_capte = usine_trouve->volume_capte;
+    data->volume_traite = usine_trouve->volume_traite;
 
     return data;
 }
 
-void parcours_inverse_et_ecriture(UsineNode* node, FILE* fichier, const char* type_metrique) {
+void parcours_inverse_et_ecriture(Facility* node, FILE* fichier, const char* type_metrique) {
     if (node != NULL) {
        
         parcours_inverse_et_ecriture(node->droite, fichier, type_metrique);
 
         
-        long long volume_km3 = 0;
+        double volume_km3 = 0;
         if (strcmp(type_metrique, "max") == 0) {
             volume_km3 = node->capacite_max;
         } else if (strcmp(type_metrique, "src") == 0) {
@@ -66,7 +66,7 @@ void parcours_inverse_et_ecriture(UsineNode* node, FILE* fichier, const char* ty
         
         double volume_mm3 = (double)volume_km3 / 1000.0;
 
-        fprintf(fichier, "%s;%.3f\n", node->id_usines, volume_mm3); 
+        fprintf(fichier, "%s;%.3f\n", node->id, volume_mm3); 
 
         parcours_inverse_et_ecriture(node->gauche, fichier, type_metrique);
     }
