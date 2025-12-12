@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> 
+#include "usine_avl.h"       
+#include "../Parser/Parser.h" 
 #include "Data.h"
-#include "usine_avl.h"      
- 
 
 #define TYPE_CAPACITE_MAX 1 
 #define TYPE_SOURCE_USINE 2 
@@ -157,5 +157,32 @@ void free_avl_usine(Facility* racine){
     free_avl_usine(racine->gauche);
     free_avl_usine(racine->droite);
     free(racine);
+}
+
+ Facility* creerAVLMax(char* nom_fichier){
+    FILE* fichier = fopen(nom_fichier, "r");
+    if (!fichier) {
+        perror("Erreur ouverture fichier");
+        return NULL;
+    }
+    
+    char ligne[500];
+    Facility* arbre_usines = NULL;
+
+    while (fgets(ligne, sizeof(ligne), fichier)) {
+
+        Facility* f = parserLine(ligne);
+        if (f == NULL){
+            continue;
+        }
+       
+        if (f->type == FACILITY_COMPLEX) {
+            arbre_usines = inserer_usine(arbre_usines,f->id,f->volume, 0.0,TYPE_CAPACITE_MAX);
+        }
+        free(f);
+    }
+
+    fclose(fichier);
+    return arbre_usines;
 }
 
