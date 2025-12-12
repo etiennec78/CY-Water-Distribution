@@ -4,12 +4,17 @@
 #include "structure.h"
 #include "usine_avl.h"       
 
+
 #define TYPE_CAPACITE_MAX 1 
 #define TYPE_SOURCE_USINE 2 
 #define TYPE_USINE_STOCKAGE 3
 
 int max(int a, int b) {
-    return (a > b) ? a : b;
+    if(a > b){
+        return a;
+    }else{
+        return b;
+    }
 }
 
 int get_hauteur_node(UsineNode *n) {
