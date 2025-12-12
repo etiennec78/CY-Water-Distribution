@@ -3,32 +3,6 @@
 #include <string.h>
 #include "../Data/Data.h"
 
-
-
-
-// int countLine(){
-//     FILE* fichier = NULL;
-//     fichier = fopen("c-wildwater_v3.dat", "r");
-
-//     if(fichier == NULL){
-//         printf("Can not open file");
-//         exit(1);
-//     }
-
-//     int c;
-//     int nbLignes = 0;
-//     while((c = fgetc(fichier)) != EOF){  
-//         if(c == '\n'){
-//             nbLignes++;
-//         }
-//     }
-//     printf("Il y a %d lignes dans le fichier", nbLignes);
-//     return nbLignes;
-//}
-
-
-
-
 FacilityType conversionCharToType(char* mot){
     char* type[19] = {"SOURCE", "SPRING", "POND", "CATCHMENT", "WELL", "RESURGENCE", "INTAKE", "BOREHOLE", "FOUNTAIN", "RESERVOIR", "FORAGE", "WELL_FIELDS", "TANK", "UNIT", "MODULE", "FACILITY_COMPLEX", "STORAGE", "JUNCTION", "CUST"};
     FacilityType facilityType[19] = {SOURCE, SPRING, POND, CATCHMENT, WELL, RESURGENCE, INTAKE, BOREHOLE, FOUNTAIN, RESERVOIR, FORAGE, WELL_FIELDS, TANK, UNIT, MODULE, FACILITY_COMPLEX, STORAGE, JUNCTION, CUST};

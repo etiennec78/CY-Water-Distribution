@@ -2,13 +2,10 @@
 #define PARSER_H
 #include "../Data/Data.h"
 
-Capture* parserTabCapture();
-Factory* parserTabFactory();
-Storage* parserTabStorage();
-connexion* parserTabConnexion(); 
-principalDistribution* parserTabPrincipalDistribution();
-secondaryDistribution* parserTabSecondaryDistribution();  
+
 int countLine();
 FacilityType conversionCharToType(char* mot);
+detectLineType(char* col1, char* col2, char* col3, char* col4, char* col5);
+Facility* parserLine(char* lineStr);
 
 #endif
