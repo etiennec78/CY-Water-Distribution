@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Data.h"
-#include "historigramme.h"
+#include "histogramme.h"
 
 
 

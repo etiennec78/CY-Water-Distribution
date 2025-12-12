@@ -1,5 +1,5 @@
-#ifndef HISTORIGRAMME_H
-#define HISTORIGRAMME_H
+#ifndef HISTOGRAMME_H
+#define HISTOGRAMME_H
 
 #include <stdio.h>
 #include "Data.h"
