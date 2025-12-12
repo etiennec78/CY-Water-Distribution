@@ -79,10 +79,10 @@ Facility *equilibrer_arbre(Facility *n) {
 
     n->hauteur = max(get_hauteur_node(n->gauche), get_hauteur_node(n->droite)) + 1;
 
-    int balance = equilibre(n); 
+    int balance = equilibrage(n);
 
     if (balance > 1) { 
-        if (equilibre(n->droite) >= 0) { 
+        if (equilibrage(n->droite) >= 0) {
             return rotation_gauche_usine(n);
         } else { 
             return rotation_droite_gauche_usine(n);

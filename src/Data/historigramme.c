@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "usine_avl.h"
 #include "Data.h"
 #include "historigramme.h"
 
