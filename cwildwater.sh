@@ -81,7 +81,7 @@ if [ ${rights: -1} != "x" ]; then
     echo "Erreur: Le fichier binaire n'a pas pu être rendu exécutable !"
 fi
 
-./bin/cwildwater
+./bin/cwildwater $@
 make clean
 
 
