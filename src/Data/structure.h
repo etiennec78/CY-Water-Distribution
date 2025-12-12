@@ -1,9 +1,5 @@
 #ifndef STRUCTURE_H
 #define STRUCTURE_H
-
-
-
-
 typedef struct UsineNode{ 
       char *id_usines;       
       long long capacite_max; 

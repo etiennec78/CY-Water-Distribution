@@ -90,6 +90,8 @@ Facility* parserLine(char* lineStr) {
             facility->parent_id[0] = '\0';                // Pas de parent
             facility->volume = atof(col4);
             facility->leak = 0;
+
+            
             break;
 
         case FACTORY_TO_STORAGE:
