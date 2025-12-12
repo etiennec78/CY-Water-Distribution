@@ -25,14 +25,14 @@ int get_hauteur_node(UsineNode *n) {
 }
 
 int hauteur_usine(UsineNode* n){
-    if(n==NULL){
+    if(n == NULL){
         return 0;
     }
     return 1 + max(hauteur_usine(n->gauche),hauteur_usine(n->droite));
 }
 
-int equilibrage(UsineNode* n){
-    if(n==NULL){
+int equilibre(UsineNode* n){
+    if(n == NULL){
         return 0;
     }
     return hauteur_usine(n->droite) - hauteur_usine(n->gauche);
@@ -79,10 +79,10 @@ UsineNode *equilibrer_arbre(UsineNode *n) {
 
     n->hauteur = max(get_hauteur_node(n->gauche), get_hauteur_node(n->droite)) + 1;
 
-    int balance = equilibrage(n); 
+    int balance = equilibre(n); 
 
     if (balance > 1) { 
-        if (equilibrage(n->droite) >= 0) { 
+        if (equilibre(n->droite) >= 0) { 
             return rotation_gauche_usine(n);
         } else { 
             return rotation_droite_gauche_usine(n);
@@ -155,6 +155,7 @@ void free_avl_usine(UsineNode* racine){
     }
     free_avl_usine(racine->gauche);
     free_avl_usine(racine->droite);
+
     if (racine->id_usines != NULL) {
         free(racine->id_usines);
     }
