@@ -17,34 +17,44 @@ FacilityType conversionCharToType(char* mot){
 
 LineType detectLineType(char* col1, char* col2, char* col3, char* col4, char* col5) {
 
-    if (strcmp(col1, "-") == 0 && strstr(col2, "Spring") != NULL && strstr(col3, "Facility complex") != NULL
-        && strcmp(col4, "-") != 0 && strcmp(col5, "-") != 0) {
-        return SOURCE_TO_FACTORY;
-    }
+    char* cols[5] = {col1, col2, col3, col4, col5};
 
-    if (strcmp(col1, "-") == 0 && strstr(col2, "Facility complex") != NULL
-        && strcmp(col3, "-") == 0 && strcmp(col4, "-") != 0 && strcmp(col5, "-") == 0) {
-        return FACTORY_ONLY;
-    }
+    const char* FACTORY_STRUCTURES[6][5] = {
+        {"-", "Spring", "Facility complex", "-", "-"},
+        {"-", "Facility complex", "-", "-", "-"},
+        {"-", "Facility complex", "Storage", "-", "-"},
+        {"Facility complex", "Storage", "Junction", "-", "-"},
+        {"Facility complex", "Junction", "Service", "-", "-"},
+        {"Facility complex", "Service", "Cust", "-", "-"}
+    };
 
-    if (strcmp(col1, "-") == 0 && strstr(col2, "Facility complex") != NULL
-        && strstr(col3, "Storage") != NULL && strcmp(col4, "-") == 0 && strcmp(col5, "-") != 0) {
-        return FACTORY_TO_STORAGE;
-    }
+    const LineType FACTORY_RETURNS[6] = {
+        SOURCE_TO_FACTORY,
+        FACTORY_ONLY,
+        FACTORY_TO_STORAGE,
+        STORAGE_TO_JUNCTION,
+        JUNCTION_TO_SERVICE,
+    };
 
-    if (strstr(col1, "Facility complex") != NULL && strstr(col2, "Storage") != NULL
-        && strstr(col3, "Junction") != NULL && strcmp(col4, "-") == 0 && strcmp(col5, "-") != 0) {
-        return STORAGE_TO_JUNCTION;
-    }
+    // For each factory structure
+    for (int i=0; i<6; i++) {
+        int valid = 1;
 
-    if (strstr(col1, "Facility complex") != NULL && strstr(col2, "Junction") != NULL
-        && strstr(col3, "Service") != NULL && strcmp(col4, "-") == 0 && strcmp(col5, "-") != 0) {
-        return JUNCTION_TO_SERVICE;
-    }
+        // For each factory structure element
+        for (int j=0; j<5; j++) {
 
-    if (strstr(col1, "Facility complex") != NULL && strstr(col2, "Service") != NULL
-        && strstr(col3, "Cust") != NULL && strcmp(col4, "-") == 0 && strcmp(col5, "-") != 0) {
-        return SERVICE_TO_CUST;
+            // Skip this model if the column is different from the column model
+            if (strstr(FACTORY_STRUCTURES[i][j], cols[i]) == NULL) {
+                valid = 0;
+                break;
+            }
+        }
+
+        // If the loop finished without a break
+        if (valid) {
+            // Return the related line type
+            return FACTORY_RETURNS[i];
+        }
     }
 
     return UNKNOWN;
@@ -80,6 +90,8 @@ Facility* parserLine(char* lineStr) {
             facility->parent_id[0] = '\0';                // Pas de parent
             facility->volume = atof(col4);
             facility->leak = 0;
+
+            
             break;
 
         case FACTORY_TO_STORAGE:

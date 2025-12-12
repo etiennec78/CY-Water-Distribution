@@ -13,10 +13,10 @@ Facility* recherche_usines_histo(Facility* node, char* id_search){
     }
     int comparaison = strcmp(node->id,id_search);
     
-    if(comparaison<0){
+    if(comparaison < 0){
         return recherche_usines_histo(node->gauche,id_search);
     }
-    else if(comparaison>0){
+    else if(comparaison > 0){
         return recherche_usines_histo(node->droite,id_search);
     }
     else{

@@ -1,14 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> 
-#include "Data.h"       
+#include "Data.h"
+#include "usine_avl.h"      
+ 
 
 #define TYPE_CAPACITE_MAX 1 
 #define TYPE_SOURCE_USINE 2 
 #define TYPE_USINE_STOCKAGE 3
 
 int max(int a, int b) {
-    return (a > b) ? a : b;
+    if(a > b){
+        return a;
+    }else{
+        return b;
+    }
 }
 
 int get_hauteur_node(Facility *n) {
@@ -73,10 +79,10 @@ Facility *equilibrer_arbre(Facility *n) {
 
     n->hauteur = max(get_hauteur_node(n->gauche), get_hauteur_node(n->droite)) + 1;
 
-    int balance = equilibrage(n); 
+    int balance = equilibre(n); 
 
     if (balance > 1) { 
-        if (equilibrage(n->droite) >= 0) { 
+        if (equilibre(n->droite) >= 0) { 
             return rotation_gauche_usine(n);
         } else { 
             return rotation_droite_gauche_usine(n);
@@ -150,6 +156,9 @@ void free_avl_usine(Facility* racine){
     }
     free_avl_usine(racine->gauche);
     free_avl_usine(racine->droite);
+    if (racine->id != NULL) {
+        free(racine->id);
+    }
     free(racine);
 }
 
