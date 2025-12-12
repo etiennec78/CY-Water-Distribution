@@ -35,13 +35,6 @@ typedef enum {
     SERVICE_TO_CUST
 } LineType;
 
-typedef struct Resultat_Histo{
-    char* id;
-    double capacite_max; 
-    double volume_traite;
-    double volume_capte;
-}Resultat_Histo;
-
 typedef struct Facility{
     FacilityType type;
     char id[50];
@@ -58,6 +51,13 @@ typedef struct Facility{
 
     int hauteur;
 }Facility;
+
+typedef struct Resultat_Histo{
+    char* id;
+    double capacite_max; 
+    double volume_traite;
+    double volume_capte;
+}Resultat_Histo;
 
 
 
