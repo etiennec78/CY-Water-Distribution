@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "Parser.h"
 #include "../Data/Data.h"
 
 FacilityType conversionCharToType(char* mot){
@@ -15,11 +16,9 @@ FacilityType conversionCharToType(char* mot){
     return TYPE_UNKNOWN;
 }
 
-LineType detectLineType(char* col1, char* col2, char* col3, char* col4, char* col5) {
+LineType detectLineType(char** cols) {
 
-    char* cols[5] = {col1, col2, col3, col4, col5};
-
-    const char* FACTORY_STRUCTURES[6][5] = {
+    const char* FACTORY_STRUCTURES[FACTORY_STRUCT_LEN][COL_LEN] = {
         {"-", "Spring", "Facility complex", "-", "-"},
         {"-", "Facility complex", "-", "-", "-"},
         {"-", "Facility complex", "Storage", "-", "-"},
@@ -28,7 +27,7 @@ LineType detectLineType(char* col1, char* col2, char* col3, char* col4, char* co
         {"Facility complex", "Service", "Cust", "-", "-"}
     };
 
-    const LineType FACTORY_RETURNS[6] = {
+    const LineType FACTORY_RETURNS[FACTORY_STRUCT_LEN] = {
         SOURCE_TO_FACTORY,
         FACTORY_ONLY,
         FACTORY_TO_STORAGE,
@@ -37,11 +36,11 @@ LineType detectLineType(char* col1, char* col2, char* col3, char* col4, char* co
     };
 
     // For each factory structure
-    for (int i=0; i<6; i++) {
+    for (int i=0; i<FACTORY_STRUCT_LEN; i++) {
         int valid = 1;
 
         // For each factory structure element
-        for (int j=0; j<5; j++) {
+        for (int j=0; j<COL_LEN; j++) {
 
             // Skip this model if the column is different from the column model
             if (strstr(FACTORY_STRUCTURES[i][j], cols[i]) == NULL) {
@@ -62,67 +61,70 @@ LineType detectLineType(char* col1, char* col2, char* col3, char* col4, char* co
 
 
 Facility* parserLine(char* lineStr) {
-    char* col1 = strtok(lineStr, ";");
-    char* col2 = strtok(NULL, ";");
-    char* col3 = strtok(NULL, ";");
-    char* col4 = strtok(NULL, ";");
-    char* col5 = strtok(NULL, ";");
+    char* lineIdx = lineStr;
+    char* cols[COL_LEN];
+    for (int i=0; i<COL_LEN; i++) {
+        cols[i] = strtok(lineStr, ";");
+        if (lineIdx != NULL) {
+            lineIdx = NULL;
+        }
+    }
 
     Facility* facility = malloc(sizeof(Facility));
     if (facility == NULL){
         return NULL;
     }
 
-    LineType lineType = detectLineType(col1, col2, col3, col4, col5);
+    LineType lineType = detectLineType(cols);
 
     switch(lineType) {
         case SOURCE_TO_FACTORY:
-            facility->type = conversionCharToType(col2);  // col2 = Spring
-            strcpy(facility->id, col2);
-            strcpy(facility->parent_id, col3);           // col3 = Facility complex
-            facility->volume = atof(col4);
-            facility->leak = atof(col5);
+            facility->type = conversionCharToType(cols[1]);  // col1 = Spring
+            strcpy(facility->id, cols[1]);
+            strcpy(facility->parent_id, cols[2]);           // col2 = Facility complex
+            facility->volume = atof(cols[3]);
+            facility->leak = atof(cols[4]);
             break;
 
         case FACTORY_ONLY:
-            facility->type = conversionCharToType(col2);  // col2 = Facility complex
-            strcpy(facility->id, col2);
+            facility->type = conversionCharToType(cols[1]);  // col1 = Facility complex
+            strcpy(facility->id, cols[1]);
             facility->parent_id[0] = '\0';                // Pas de parent
-            facility->volume = atof(col4);
+            facility->volume = atof(cols[3]);
             facility->leak = 0;
 
             
             break;
 
         case FACTORY_TO_STORAGE:
-            facility->type = conversionCharToType(col3);  // col3 = Storage
-            strcpy(facility->id, col3);
-            strcpy(facility->parent_id, col2);           // col2 = Facility complex
-            facility->volume = atof(col4);
+            facility->type = conversionCharToType(cols[2]);  // col2 = Storage
+            strcpy(facility->id, cols[2]);
+            strcpy(facility->parent_id, cols[1]);           // col1 = Facility complex
+            facility->volume = atof(cols[3]);
             facility->leak = 0;
             break;
 
         case STORAGE_TO_JUNCTION:
-            facility->type = conversionCharToType(col3);  // col3 = Junction
-            strcpy(facility->id, col3);
-            strcpy(facility->parent_id, col2);           // col2 = Storage
-            facility->volume = atof(col4);
+            facility->type = conversionCharToType(cols[2]);  // col2 = Junction
+            strcpy(facility->id, cols[2]);
+            strcpy(facility->parent_id, cols[1]);           // col1 = Storage
+            facility->volume = atof(cols[3]);
             facility->leak = 0;
             break;
 
         case JUNCTION_TO_SERVICE:
-            facility->type = conversionCharToType(col3);  // col3 = Service
-            strcpy(facility->id, col3);
-            strcpy(facility->parent_id, col2);           // col2 = Junction
-            facility->volume = atof(col4);
+            facility->type = conversionCharToType(cols[2]);  // col2 = Service
+            strcpy(facility->id, cols[2]);
+            strcpy(facility->parent_id, cols[1]);           // col1 = Junction
+            facility->volume = atof(cols[3]);
             facility->leak = 0;
             break;
 
         case SERVICE_TO_CUST:
-            facility->type = conversionCharToType(col3);  // col3 = Cust
-            strcpy(facility->id, col3);
-            strcpy(facility->parent_id, col2);           // col2 = Service
-            facility->volume = atof(col4);
+            facility->type = conversionCharToType(cols[2]);  // col2 = Cust
+            strcpy(facility->id, cols[2]);
+            strcpy(facility->parent_id, cols[1]);           // col1 = Service
+            facility->volume = atof(cols[3]);
             facility->leak = 0;
             break;
 
