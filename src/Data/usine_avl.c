@@ -144,3 +144,15 @@ UsineNode *inserer_usine(UsineNode *racine, char *id, long long vol_info, float 
     return equilibrer_arbre(racine);
 }
 
+void free_avl_usine(UsineNode* racine){
+    if(racine ==NULL){
+        return NULL;
+    }
+    free_avl_usine(racine->gauche);
+    free_avl_usine(racine->droite);
+    if (racine->id_usines != NULL) {
+        free(racine->id_usines);
+    }
+    free(racine);
+}
+
