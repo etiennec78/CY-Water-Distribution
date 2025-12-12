@@ -156,9 +156,6 @@ void free_avl_usine(Facility* racine){
     }
     free_avl_usine(racine->gauche);
     free_avl_usine(racine->droite);
-    if (racine->id != NULL) {
-        free(racine->id);
-    }
     free(racine);
 }
 
