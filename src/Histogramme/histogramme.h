@@ -1,0 +1,1 @@
+void histogramme(char* db_path, char* histo_type);

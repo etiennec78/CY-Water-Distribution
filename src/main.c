@@ -1,8 +1,16 @@
 #include <stdio.h>
+#include <string.h>
+#include "Histogramme/histogramme.h"
+#include "Leaks/leaks.h"
 
 int main(int argc, char **argv) {
-    for (int i=1; i<argc; i++) {
-        printf("arg%d: %s\n", i, argv[i]);
+
+    if (strcmp(argv[2], "histo")) {
+        histogramme(argv[1], argv[3]);
     }
+    else if (strcmp(argv[2], "leaks")) {
+        leaks(argv[1], argv[3]);
+    }
+
     return 0;
 }
