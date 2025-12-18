@@ -51,8 +51,8 @@ Facility *rotation_droite_usine(Facility *a) {
     b->droite = a;
     a->gauche = T2; 
 
-    a->hauteur = max(get_hauteur_node(a->gauche), get_hauteur_node(a->droite)) + 1;
-    b->hauteur = max(get_hauteur_node(b->gauche), get_hauteur_node(b->droite)) + 1;
+    a->hauteur = max(hauteur_node(a->gauche), hauteur_node(a->droite)) + 1;
+    b->hauteur = max(hauteur_node(b->gauche), hauteur_node(b->droite)) + 1;
 
     return b; 
 }
@@ -70,7 +70,7 @@ Facility *rotation_gauche_droite_usine(Facility *n) {
 Facility *equilibrer_arbre(Facility *n) {
     if (n == NULL) return n;
 
-    n->hauteur = max(get_hauteur_node(n->gauche), get_hauteur_node(n->droite)) + 1;
+    n->hauteur = max(hauteur_node(n->gauche), hauteur_node(n->droite)) + 1;
 
     int balance = equilibrage(n);
 
