@@ -45,6 +45,7 @@ typedef struct Facility{
     double capacite_max;
     double volume_traite;
     double volume_capte;
+    double volume_perdu;
     
     struct Facility* droite;
     struct Facility* gauche;
