@@ -27,23 +27,15 @@ LineType detectLineType(char** cols) {
         {"Facility complex", "Service", "Cust", "-", "-"}
     };
 
-    const LineType FACTORY_RETURNS[FACTORY_STRUCT_LEN] = {
-        SOURCE_TO_FACTORY,
-        FACTORY_ONLY,
-        FACTORY_TO_STORAGE,
-        STORAGE_TO_JUNCTION,
-        JUNCTION_TO_SERVICE,
-    };
-
     // For each factory structure
-    for (int i=0; i<FACTORY_STRUCT_LEN; i++) {
+    for (int i=SOURCE_TO_FACTORY; i<=SERVICE_TO_CUST; i++) {
         int valid = 1;
 
         // For each factory structure element
         for (int j=0; j<COL_LEN; j++) {
 
             // Skip this model if the column is different from the column model
-            if (strstr(FACTORY_STRUCTURES[i][j], cols[i]) == NULL) {
+            if (strstr(FACTORY_STRUCTURES[i-1][j], cols[j]) == NULL) {
                 valid = 0;
                 break;
             }
@@ -52,7 +44,7 @@ LineType detectLineType(char** cols) {
         // If the loop finished without a break
         if (valid) {
             // Return the related line type
-            return FACTORY_RETURNS[i];
+            return i;
         }
     }
 
