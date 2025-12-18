@@ -14,6 +14,7 @@ Facility *rotation_gauche_droite_usine(Facility *z);
 Facility *rotation_droite_gauche_usine(Facility *z);
 Facility *nouvelle_usine(char *id, double capacite_max);
 Facility *inserer_usine(Facility *racine, char *id, double vol_info, double pourcentage_fuite, int type_ligne);
+Facility* creerAVLMax(char* nom_fichier);
 
 
 #endif
