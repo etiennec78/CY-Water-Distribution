@@ -3,6 +3,7 @@
 #include "../Data/Data.h"
 
 #define COL_LEN 5
+#define COL_CHECK_LEN 3
 #define FACTORY_STRUCT_LEN 6
 
 int countLine();

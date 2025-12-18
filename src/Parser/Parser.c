@@ -18,13 +18,13 @@ FacilityType conversionCharToType(char* mot){
 
 LineType detectLineType(char** cols) {
 
-    const char* FACTORY_STRUCTURES[FACTORY_STRUCT_LEN][COL_LEN] = {
-        {"-", "Spring", "Facility complex", "-", "-"},
-        {"-", "Facility complex", "-", "-", "-"},
-        {"-", "Facility complex", "Storage", "-", "-"},
-        {"Facility complex", "Storage", "Junction", "-", "-"},
-        {"Facility complex", "Junction", "Service", "-", "-"},
-        {"Facility complex", "Service", "Cust", "-", "-"}
+    const char* FACTORY_STRUCTURES[FACTORY_STRUCT_LEN][COL_CHECK_LEN] = {
+        {"-", "Spring", "Facility complex"},
+        {"-", "Facility complex", "-"},
+        {"-", "Facility complex", "Storage"},
+        {"Facility complex", "Storage", "Junction"},
+        {"Facility complex", "Junction", "Service"},
+        {"Facility complex", "Service", "Cust"}
     };
 
     // For each factory structure
@@ -32,10 +32,10 @@ LineType detectLineType(char** cols) {
         int valid = 1;
 
         // For each factory structure element
-        for (int j=0; j<COL_LEN; j++) {
+        for (int j=0; j<COL_CHECK_LEN; j++) {
 
             // Skip this model if the column is different from the column model
-            if (strstr(FACTORY_STRUCTURES[i-1][j], cols[j]) == NULL) {
+            if (strstr(cols[j], FACTORY_STRUCTURES[i-1][j]) == NULL) {
                 valid = 0;
                 break;
             }
@@ -83,8 +83,6 @@ Facility* parserLine(char* lineStr) {
             facility->parent_id[0] = '\0';                // Pas de parent
             facility->volume = atof(cols[3]);
             facility->leak = 0;
-
-            
             break;
 
         case FACTORY_TO_STORAGE:
