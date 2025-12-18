@@ -243,3 +243,4 @@ Facility* creerAVLLeaks(char* nom_fichier){
 
     fclose(fichier);
     return arbre_leaks;
+}
