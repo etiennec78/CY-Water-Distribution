@@ -5,11 +5,11 @@
 #include "../Data/Data.h"
 
 FacilityType conversionCharToType(char* mot){
-    char* type[20] = {"-", "SOURCE", "SPRING", "POND", "CATCHMENT", "WELL", "RESURGENCE", "INTAKE", "BOREHOLE", "FOUNTAIN", "RESERVOIR", "FORAGE", "WELL_FIELDS", "TANK", "UNIT", "MODULE", "FACILITY_COMPLEX", "STORAGE", "JUNCTION", "CUST"};
-    FacilityType facilityType[20] = {NONE, SOURCE, SPRING, POND, CATCHMENT, WELL, RESURGENCE, INTAKE, BOREHOLE, FOUNTAIN, RESERVOIR, FORAGE, WELL_FIELDS, TANK, UNIT, MODULE, FACILITY_COMPLEX, STORAGE, JUNCTION, CUST};
-    
+    char* type[20] = {"-", "Source", "Spring", "Pond", "Catchment", "Well", "Resurgence", "Intake", "Borehole", "Fountain", "Reservoir", "Forage", "Well field", "Tank", "Unit", "Module", "Facility complex", "Storage", "Junction", "Cust"};
+    FacilityType facilityType[20] = {NONE, SOURCE, SPRING, POND, CATCHMENT, WELL, RESURGENCE, INTAKE, BOREHOLE, FOUNTAIN, RESERVOIR, FORAGE, WELL_FIELD, TANK, UNIT, MODULE, FACILITY_COMPLEX, STORAGE, JUNCTION, CUST};
+
     for(int i = 0; i < 20; i++){
-        if(strcmp(mot, type[i]) == 0){
+        if(strstr(mot, type[i]) != NULL){
             return facilityType[i];
         }
     }

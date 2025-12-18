@@ -14,7 +14,7 @@ typedef enum {
     FOUNTAIN,
     RESERVOIR,
     FORAGE,
-    WELL_FIELDS,
+    WELL_FIELD,
     TANK,
     UNIT,
     MODULE,
