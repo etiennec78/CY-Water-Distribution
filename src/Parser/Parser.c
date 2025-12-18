@@ -61,12 +61,11 @@ LineType detectLineType(char** cols) {
 
 
 Facility* parserLine(char* lineStr) {
-    char* lineIdx = lineStr;
     char* cols[COL_LEN];
     for (int i=0; i<COL_LEN; i++) {
         cols[i] = strtok(lineStr, ";");
-        if (lineIdx != NULL) {
-            lineIdx = NULL;
+        if (lineStr != NULL) {
+            lineStr = NULL;
         }
     }
 
