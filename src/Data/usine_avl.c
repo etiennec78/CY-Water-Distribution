@@ -17,25 +17,18 @@ int max(int a, int b) {
     }
 }
 
-int get_hauteur_node(Facility *n) {
+int hauteur_node(Facility *n) {
     if (n == NULL) {
         return 0; 
     }
     return n->hauteur;
 }
 
-int hauteur_usine(Facility* n){
-    if(n==NULL){
-        return 0;
-    }
-    return 1 + max(hauteur_usine(n->gauche),hauteur_usine(n->droite));
-}
-
 int equilibrage(Facility* n){
     if(n==NULL){
         return 0;
     }
-    return hauteur_usine(n->droite) - hauteur_usine(n->gauche);
+    return hauteur_node(n->droite) - hauteur_node(n->gauche);
 }
 
 Facility *rotation_gauche_usine(Facility *a) {
@@ -45,8 +38,8 @@ Facility *rotation_gauche_usine(Facility *a) {
     b->gauche = a;
     a->droite = T2; 
 
-    a->hauteur = max(get_hauteur_node(a->gauche), get_hauteur_node(a->droite)) + 1;
-    b->hauteur = max(get_hauteur_node(b->gauche), get_hauteur_node(b->droite)) + 1;
+    a->hauteur =  1 + max(hauteur_node(a->gauche), hauteur_node(a->droite));
+    b->hauteur =  1 + max(hauteur_node(b->gauche), hauteur_node(b->droite));
 
     return b; 
 }
