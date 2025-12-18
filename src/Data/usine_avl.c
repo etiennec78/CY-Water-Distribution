@@ -186,3 +186,67 @@ void free_avl_usine(Facility* racine){
     return arbre_usines;
 }
 
+Facility *inserer_usine_leak(Facility *racine, char *id, double perte) {
+    if (racine == NULL) {
+        Facility *new_node = malloc(sizeof(Facility));
+        if (new_node == NULL){
+            printf("Erreur d'allocation mémoire");
+            return NULL;
+        }
+
+        // Initialisation complète
+        strncpy(new_node->id, id, 49);
+        new_node->id[49] = '\0';   
+        new_node->parent_id[0] = '\0';
+        new_node->type = NONE;      
+        new_node->volume = 0.0;
+        new_node->capacite_max = 0.0;
+        new_node->volume_capte = 0.0;
+        new_node->volume_traite = 0.0;
+        new_node->volume_perdu = perte;
+        new_node->gauche = NULL;
+        new_node->droite = NULL;
+        new_node->hauteur = 1;
+
+        return new_node;
+    }
+
+    int cmp = strcmp(id, racine->id);
+
+    if (cmp < 0) {
+        racine->gauche = inserer_usine_leak(racine->gauche, id, perte);
+    } else if (cmp > 0) {
+        racine->droite = inserer_usine_leak(racine->droite, id, perte);
+    } else {
+        // Noeud existant : cumul des pertes
+        racine->volume_perdu += perte;
+    }
+
+    // Rééquilibrage AVL
+    return equilibrer_arbre(racine);
+}
+
+Facility* creerAVLLeaks(char* nom_fichier){
+    FILE* fichier = fopen(nom_fichier, "r");
+    if (!fichier) {
+        printf("Erreur ouverture fichier %s\n", nom_fichier);
+        return NULL;
+    }
+    
+    char ligne[500];
+    Facility* arbre_leaks = NULL;
+
+    while (fgets(ligne, sizeof(ligne), fichier)) {
+        Facility* f = parserLine(ligne);
+        if (f == NULL){
+            continue;
+        }
+
+        if (f->type == SOURCE || f->type == SPRING) {
+            arbre_leaks = inserer_usine_leak(arbre_leaks, f->parent_id, f->volume_perdu);
+        }
+        free(f);
+    }
+
+    fclose(fichier);
+    return arbre_leaks;
