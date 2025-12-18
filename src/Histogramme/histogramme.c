@@ -9,5 +9,6 @@ void histogramme(char* db_path, char* histo_type) {
     if (strcmp(histo_type, "max") == 0) {
         avl = creerAVLMax(db_path);
         printf("Capacité maximale: %f\n", avl->capacite_max);
+        free_avl_usine(avl);
     }
 }
