@@ -46,10 +46,14 @@ void histogramme(char* db_path, char* histo_type) {
         getter = get_volume_capte;
         dataTitle = "Volume capté";
     }
-    else {
+    else if (strcmp(histo_type, "real") == 0){
         filePath = "data/vol_traitement.dat";
         getter = get_volume_traite;
         dataTitle = "Volume traité";
+    }
+    else{
+        printf("Argument non valide");
+        return;
     }
 
     FILE* f = fopen(filePath, "w");
