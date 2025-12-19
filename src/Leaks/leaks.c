@@ -1,8 +1,47 @@
 #include <stdio.h>
 #include "../Data/Data.h"
 
-void leaks(char* db_path, char* factory_id) {
-    printf("DB: %s, factory: %s\n", db_path, factory_id);
+#include <stdlib.h>
+#include <string.h>
+#include "../Parser/Parser.h" 
+
+NetworkComponent* find_or_create_component(NodeIndex** index_root, char* id, FacilityType type) {
+    if (*index_root == NULL) {
+        NetworkComponent* new_comp = malloc(sizeof(NetworkComponent));
+        strcpy(new_comp->id, id);
+        new_comp->type = type;
+        new_comp->leak_percent = 0;
+        new_comp->first_child = NULL;
+        new_comp->next_sibling = NULL;
+
+        *index_root = malloc(sizeof(NodeIndex));
+        strcpy((*index_root)->id, id);
+        (*index_root)->component_ptr = new_comp;
+        (*index_root)->left = (*index_root)->right = NULL;
+        (*index_root)->height = 1;
+        
+        return new_comp;
+    }
+
+    int cmp = strcmp(id, (*index_root)->id);
+    if (cmp < 0){
+        return find_or_create_component(&((*index_root)->left), id, type);
+    }if (cmp > 0){
+        return find_or_create_component(&((*index_root)->right), id, type);
+    }
+    
+    return (*index_root)->component_ptr;
+}
+
+void link_components(NetworkComponent* parent, NetworkComponent* child, double leak_p) {
+    if (parent == NULL || child == NULL){
+        return;
+    }
+    child->leak_percent = leak_p;
+    
+    // Add the child to the parent's list
+    child->next_sibling = parent->first_child;
+    parent->first_child = child;
 }
 
 double calculate_total_leaks(NetworkComponent* current, double incoming_volume) {
@@ -34,3 +73,49 @@ double calculate_total_leaks(NetworkComponent* current, double incoming_volume) 
 
     return loss_in_this_segment + downstream_losses;
 }
+
+
+
+void leaks(char* db_path, char* target_factory_id) {
+    FILE* file = fopen(db_path, "r");
+    if (!file) return;
+
+    NodeIndex* index = NULL;
+    NetworkComponent* root_factory = NULL;
+    double total_captured_for_factory = 0.0;
+    char line[1024];
+
+    while (fgets(line, sizeof(line), file)) {
+        Facility* f = parserLine(line); 
+        if(f == NULL){
+            continue;
+        }
+
+        NetworkComponent* parent = find_or_create_component(&index, f->parent_id, NONE);
+        NetworkComponent* child = find_or_create_component(&index, f->id, f->type);
+
+        link_components(parent, child, f->leak);
+
+   
+        if (strcmp(child->id, target_factory_id) == 0 && f->type == FACILITY_COMPLEX) {
+            root_factory = child;
+        }
+        
+        if (strcmp(f->parent_id, target_factory_id) != 0 && strcmp(f->id, target_factory_id) == 0) {
+             total_captured_for_factory += f->volume_traite; 
+        }
+
+        free(f);
+    }
+
+    if (root_factory) {
+        double lost_volume = calculate_total_leaks(root_factory, total_captured_for_factory);
+        printf("Total volume lost for %s: %.3f M.m3\n", target_factory_id, lost_volume);
+    } else {
+        printf("Usine non trouvée\n"); 
+    }
+
+    fclose(file);
+}
+
+

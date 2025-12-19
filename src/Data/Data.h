@@ -70,6 +70,13 @@ typedef struct NetworkComponent {
     struct NetworkComponent* next_sibling; // Child on the same level
 } NetworkComponent;
 
+typedef struct NodeIndex {
+    char id[50];
+    NetworkComponent* component_ptr; 
+    struct NodeIndex *left;
+    struct NodeIndex *right;
+    int height;
+} NodeIndex;
 
 
 
