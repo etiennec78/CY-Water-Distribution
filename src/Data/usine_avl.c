@@ -84,7 +84,7 @@ Facility *equilibrer_arbre(Facility *avl) {
     return avl;
 }
 
-Facility *nouvelle_usine(char *id, double capacite_max, LineType type_ligne) {
+Facility *nouvelle_usine(char *id) {
     Facility *new_node = malloc(sizeof(Facility));
     if (new_node == NULL) {
         return NULL;
@@ -96,9 +96,9 @@ Facility *nouvelle_usine(char *id, double capacite_max, LineType type_ligne) {
     new_node->volume = 0.0;
     new_node->leak = 0.0;
     new_node->parent_id[0] = '\0';
-    new_node->type_ligne = type_ligne;
+    new_node->type_ligne = UNKNOWN;
     
-    new_node->capacite_max = capacite_max;
+    new_node->capacite_max = 0.0;
     new_node->gauche = NULL;
     new_node->droite = NULL;
     new_node->volume_traite = 0.0;
@@ -107,28 +107,43 @@ Facility *nouvelle_usine(char *id, double capacite_max, LineType type_ligne) {
     
     return new_node;
 }
+
+void update_usine_values(Facility *node, double vol_info, double pourcentage_fuite, LineType type_ligne) {
+    if (type_ligne == FACTORY_ONLY) {
+        node->capacite_max = vol_info / 1000.0;
+        node->type_ligne = FACTORY_ONLY; // Mark as factory
+    } else if (type_ligne == SOURCE_TO_FACTORY) {
+        node->volume_capte += vol_info / 1000.0;
+        double volume_net_traite = (vol_info / 1000.0) * (1.0 - (pourcentage_fuite / 100.0));
+        node->volume_traite += volume_net_traite;
+    }
+    // FACTORY_TO_STORAGE: do nothing
+}
+
 Facility *inserer_usine(Facility *racine, char *id, double vol_info, double pourcentage_fuite, LineType type_ligne, int *h) {
     if (racine == NULL) {
         *h = 1;
-        return nouvelle_usine(id, vol_info/1000, type_ligne);
+        racine = nouvelle_usine(id);
+        if (racine != NULL) {
+            update_usine_values(racine, vol_info, pourcentage_fuite, type_ligne);
+        }
+        return racine;
     }
 
     int cmp = strcmp(id, racine->id);
 
     if (cmp < 0) {
         racine->gauche = inserer_usine(racine->gauche, id, vol_info, pourcentage_fuite, type_ligne, h);
-        *h = -*h;
     } else if (cmp > 0) {
         racine->droite = inserer_usine(racine->droite, id, vol_info, pourcentage_fuite, type_ligne, h);
     } else {
-        racine->capacite_max = vol_info;
-        racine->volume_capte += vol_info;
-        double volume_net_traite = vol_info *(1.0 -(pourcentage_fuite/100.0));
-        racine->volume_traite += volume_net_traite;
+        update_usine_values(racine, vol_info, pourcentage_fuite, type_ligne);
         *h = 0;
         return racine;
     }
 
+    if (cmp < 0) *h = -*h;
+    
     if (*h != 0){
         racine->equilibre = racine->equilibre + *h;
         racine = equilibrer_arbre(racine);
