@@ -78,8 +78,9 @@ double calculate_total_leaks(NetworkComponent* current, double incoming_volume) 
 
 void leaks(char* db_path, char* target_factory_id) {
     FILE* file = fopen(db_path, "r");
-    if (!file) return;
-
+    if (file == NULL){
+        return;
+    }
     NodeIndex* index = NULL;
     NetworkComponent* root_factory = NULL;
     double total_captured_for_factory = 0.0;
