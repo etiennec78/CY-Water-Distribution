@@ -3,6 +3,7 @@ SRC_DIR = src
 OBJ_DIR = obj
 BIN_DIR = bin
 TARGET = $(BIN_DIR)/cwildwater
+CFLAGS = -Wall -Wextra -O2
 
 # Find all .c files in src and its subdirectories
 SRCS = $(wildcard $(SRC_DIR)/*.c) $(wildcard $(SRC_DIR)/*/*.c)
@@ -15,11 +16,11 @@ all: $(TARGET)
 
 $(TARGET): $(OBJS)
 	@mkdir -p $(BIN_DIR)
-	$(CC) -o $@ $^
+	$(CC) -o $@ $^ $(CFLAGS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
-	$(CC) -c -o $@ $<
+	$(CC) -c -o $@ $< $(CFLAGS)
 
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
