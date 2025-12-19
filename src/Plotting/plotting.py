@@ -76,7 +76,9 @@ class Plotter:
             spamreader = csv.reader(data_file, delimiter=";")
             for row in spamreader:
                 if len(row) < 2:
-                    print("Erreur: Le fichier de données doit contenir au moins 2 colonnes !")
+                    print(
+                        "Erreur: Le fichier de données doit contenir au moins 2 colonnes !"
+                    )
                     exit(2)
                 result.update({row[0]: [float(val) for val in row[1:]]})
 
@@ -106,9 +108,9 @@ class Plotter:
 
         # Add value labels on top of bars
         for i, total in enumerate(bottom):
-            plt.text(i, total, round(total, 2), va='bottom', ha='center')
+            plt.text(i, total, round(total, 2), va="bottom", ha="center")
 
-        plt.xticks(rotation=45, ha='right')
+        plt.xticks(rotation=45, ha="right")
         plt.tight_layout()
         plt.savefig(self.output_path)
 
