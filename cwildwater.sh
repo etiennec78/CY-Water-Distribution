@@ -114,7 +114,6 @@ if [[ ! $(python --version 2>/dev/null) ]]; then
 fi
 
 # Get the location of the data file
-[[ "$3" == "max" ]]
 case "$3" in
     "max")
     data_file="data/vol_max.dat"
