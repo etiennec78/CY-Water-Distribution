@@ -115,7 +115,7 @@ Facility *nouvelle_usine(char *id, double capacite_max) {
 Facility *inserer_usine(Facility *racine, char *id, double vol_info, double pourcentage_fuite, int type_ligne) {
     if (racine == NULL) {
         if (type_ligne == TYPE_CAPACITE_MAX) {
-            return nouvelle_usine(id, vol_info);
+            return nouvelle_usine(id, vol_info/1000);
         }
         if (type_ligne == TYPE_SOURCE_USINE || type_ligne == TYPE_USINE_STOCKAGE) {
             return nouvelle_usine(id, 0); 
