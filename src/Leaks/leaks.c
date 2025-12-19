@@ -4,11 +4,82 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../Parser/Parser.h" 
+#include "../Data/usine_avl.h" 
+
+
+int hauteur_index(NodeIndex* n) {
+    if (n == NULL) {
+        return 0;
+    }
+    return n->height; 
+}
+int equilibre_index(NodeIndex* n){
+    if(n == NULL) return 0;
+    return hauteur_index(n->right) - hauteur_index(n->left);
+}
+
+
+
+NodeIndex* rotation_gauche_index(NodeIndex* a) {
+    NodeIndex* b = a->right;
+    NodeIndex* T2 = b->left;
+    b->left = a;
+    a->right = T2;
+    a->height = 1 + max(hauteur_index(a->left), hauteur_index(a->right));
+    b->height = 1 + max(hauteur_index(b->left), hauteur_index(b->right));
+    return b;
+}
+
+NodeIndex* rotation_droite_index(NodeIndex* a) {
+    NodeIndex* b = a->left;
+    NodeIndex* T2 = b->right;
+    b->right = a;
+    a->left = T2;
+    a->height = 1 + max(hauteur_index(a->left), hauteur_index(a->right));
+    b->height = 1 + max(hauteur_index(b->left), hauteur_index(b->right));
+    return b;
+}
+
+NodeIndex* equilibrer_arbre_index(NodeIndex* n) {
+    if (n == NULL) return n;
+    n->height = 1 + max(hauteur_index(n->left), hauteur_index(n->right));
+    int balance = equilibre_index(n);
+
+    if (balance > 1) { 
+        if (equilibre_index(n->right) < 0){
+            n->right = rotation_droite_index(n->right);
+        }else{
+            return rotation_gauche_index(n);
+        }
+    }
+    if (balance < -1) { 
+        if (equilibre_index(n->left) > 0){
+            n->left = rotation_gauche_index(n->left);
+        }else{
+            return rotation_droite_index(n);
+        }
+    }
+    return n;
+}
+
 
 NetworkComponent* find_or_create_component(NodeIndex** index_root, char* id, FacilityType type) {
     if (*index_root == NULL) {
         NetworkComponent* new_comp = malloc(sizeof(NetworkComponent));
+        strncpy(new_comp->id, id, 49);
+        new_comp->id[49] = '\0';
+        new_comp->type = type;
+        new_comp->leak_percent = 0;
+        new_comp->first_child = NULL;
+        new_comp->next_sibling = NULL;
+
         *index_root = malloc(sizeof(NodeIndex));
+        strncpy((*index_root)->id, id, 49);
+        (*index_root)->id[49] = '\0';
+        (*index_root)->component_ptr = new_comp;
+        (*index_root)->left = (*index_root)->right = NULL;
+        (*index_root)->height = 1;
+
         return new_comp;
     }
 
@@ -20,10 +91,10 @@ NetworkComponent* find_or_create_component(NodeIndex** index_root, char* id, Fac
     } else if (cmp > 0){
         res = find_or_create_component(&((*index_root)->right), id, type);
     } else {
-        return (*index_root)->component_ptr; // Déjà présent
+        return (*index_root)->component_ptr; 
     }
 
-    (*index_root)->height = 1 + max(hauteur_node_index((*index_root)->left), hauteur_node_index((*index_root)->right));
+    (*index_root)->height = 1 + max(hauteur_index((*index_root)->left), hauteur_index((*index_root)->right));
 
     *index_root = equilibrer_arbre_index(*index_root);
 

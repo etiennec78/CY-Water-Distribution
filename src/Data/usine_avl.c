@@ -260,8 +260,8 @@ Facility* creerAVLLeaks(char* nom_fichier){
 void freeAll(NodeIndex* root) {
     if (root == NULL) return;
     
-    clean_leaks_memory(root->left);
-    clean_leaks_memory(root->right);
+    freeAll(root->left);
+    freeAll(root->right);
     
     if (root->component_ptr != NULL) {
         free(root->component_ptr);
