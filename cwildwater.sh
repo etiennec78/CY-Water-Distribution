@@ -1,3 +1,5 @@
+start=$(date +%s%N)
+
 help_message="""
 C-WildWaters: Un script pour effectuer un histogramme
 des usines de traitement d'eau à partir d'un fichier .dat.
@@ -97,3 +99,7 @@ if [ ! -x cwildwater.sh ]; then
 fi
 
 ./bin/cwildwater $@
+
+end=$(date +%s%N)
+exec_time=$(( (end - start) / 1000000 ))
+echo "Fin de l'exécution en $((exec_time))ms"
