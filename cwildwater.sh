@@ -1,7 +1,7 @@
 start=$(date +%s%N)
 
 help_message="""
-C-WildWaters: Un script pour effectuer un histogramme
+C-WildWater: Un script pour effectuer un histogramme
 des usines de traitement d'eau à partir d'un fichier .dat.
 
 Utilisation: ./cwildwater.sh <db_file> [arg] [subarg]
