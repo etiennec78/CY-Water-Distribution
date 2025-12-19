@@ -11,7 +11,6 @@ LineType detectLineType(char** cols) {
     }
 
     int c1_dash = (strcmp(cols[0], "-") == 0);
-    int c2_dash = (strcmp(cols[1], "-") == 0);
     int c3_dash = (strcmp(cols[2], "-") == 0);
     int c4_dash = (strcmp(cols[3], "-") == 0);
     int c5_dash = (strcmp(cols[4], "-") == 0);
