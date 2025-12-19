@@ -47,7 +47,7 @@ class Plotter:
 
     data_path: str
     output_path: str
-    data: dict[str:float] | None
+    data: dict[str:list[float]] | None
 
     def __init__(self, data_path: str) -> None:
         """Init the plotter."""
@@ -64,7 +64,7 @@ class Plotter:
         splitted = self.data_path.split(".")
         return ".".join(splitted[:-1]) + ".png"
 
-    def parse_data(self) -> dict[str:float]:
+    def parse_data(self) -> dict[str:list[float]]:
         """Parse the data from the file given as an argument.
 
         Returns a dict value: {factory_id: value}."""
@@ -75,10 +75,10 @@ class Plotter:
 
             spamreader = csv.reader(data_file, delimiter=";")
             for row in spamreader:
-                if len(row) != 2:
-                    print("Erreur: Le fichier de données doit contenir 2 colonnes !")
+                if len(row) < 2:
+                    print("Erreur: Le fichier de données doit contenir au moins 2 colonnes !")
                     exit(2)
-                result.update({row[0]: float(row[1])})
+                result.update({row[0]: [float(val) for val in row[1:]]})
 
         return result
 
@@ -87,7 +87,7 @@ class Plotter:
         if self.data is None:
             self.data = self.parse_data()
 
-        sorted_data = sorted(self.data.items(), key=lambda item: item[1])
+        sorted_data = sorted(self.data.items(), key=lambda item: sum(item[1]))
         if len(sorted_data) > 10:
             filtered_data = sorted_data[:5] + sorted_data[-5:]
         else:
@@ -97,12 +97,16 @@ class Plotter:
         ypoints = np.array([item[1] for item in filtered_data])
 
         plt.figure(figsize=(12, 6))
-        bars = plt.bar(xpoints, ypoints)
+
+        bottom = np.zeros(len(xpoints))
+
+        for i in range(ypoints.shape[1]):
+            plt.bar(xpoints, ypoints[:, i], bottom=bottom)
+            bottom += ypoints[:, i]
 
         # Add value labels on top of bars
-        for bar in bars:
-            yval = bar.get_height()
-            plt.text(bar.get_x() + bar.get_width()/2, yval, round(yval, 2), va='bottom', ha='center')
+        for i, total in enumerate(bottom):
+            plt.text(i, total, round(total, 2), va='bottom', ha='center')
 
         plt.xticks(rotation=45, ha='right')
         plt.tight_layout()

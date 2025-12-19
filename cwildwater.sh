@@ -53,7 +53,7 @@ case "$2" in ("histo"|"leaks")
 esac
 
 if [ "$2" = "histo" ]; then
-    case "$3" in ("max"|"src"|"real")
+    case "$3" in ("max"|"src"|"real"|"all")
         ;;
         *)
             echo "$help_message"
@@ -126,6 +126,10 @@ case "$3" in
     "real")
     data_file="data/vol_traitement.dat"
     graph_file="data/vol_traitement.png"
+    ;;
+    "all")
+    data_file="data/histo_all.dat"
+    graph_file="data/histo_all.dat"
     ;;
     *)
     data_file=""
