@@ -44,24 +44,25 @@ Arguments:
 
 class Plotter:
     """A class to store plotting related functions."""
+
     data_path: str
-    data: dict[str: float] | None
+    data: dict[str:float] | None
 
     def __init__(self, data_path: str) -> None:
         """Init the plotter."""
         self.data_path = data_path
         self.data = None
 
-    def parse_data(self) -> dict[str: float]:
+    def parse_data(self) -> dict[str:float]:
         """Parse the data from the file given as an argument.
 
         Returns a dict value: {factory_id: value}."""
 
         result = {}
-        with open(self.data_path, newline='') as data_file:
+        with open(self.data_path, newline="") as data_file:
             next(data_file)
 
-            spamreader = csv.reader(data_file, delimiter=';')
+            spamreader = csv.reader(data_file, delimiter=";")
             for row in spamreader:
                 if len(row) != 2:
                     print("Error: The data file must contain 2 columns !")
@@ -70,8 +71,8 @@ class Plotter:
 
         return result
 
-
     def plot(self) -> None:
+        """Display the data parsed on a bar graph."""
         if self.data is None:
             self.data = self.parse_data()
 
