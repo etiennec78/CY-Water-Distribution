@@ -8,29 +8,26 @@
 NetworkComponent* find_or_create_component(NodeIndex** index_root, char* id, FacilityType type) {
     if (*index_root == NULL) {
         NetworkComponent* new_comp = malloc(sizeof(NetworkComponent));
-        strcpy(new_comp->id, id);
-        new_comp->type = type;
-        new_comp->leak_percent = 0;
-        new_comp->first_child = NULL;
-        new_comp->next_sibling = NULL;
-
         *index_root = malloc(sizeof(NodeIndex));
-        strcpy((*index_root)->id, id);
-        (*index_root)->component_ptr = new_comp;
-        (*index_root)->left = (*index_root)->right = NULL;
-        (*index_root)->height = 1;
-        
         return new_comp;
     }
 
     int cmp = strcmp(id, (*index_root)->id);
+    NetworkComponent* res = NULL; 
+
     if (cmp < 0){
-        return find_or_create_component(&((*index_root)->left), id, type);
-    }if (cmp > 0){
-        return find_or_create_component(&((*index_root)->right), id, type);
+        res = find_or_create_component(&((*index_root)->left), id, type);
+    } else if (cmp > 0){
+        res = find_or_create_component(&((*index_root)->right), id, type);
+    } else {
+        return (*index_root)->component_ptr; // Déjà présent
     }
-    
-    return (*index_root)->component_ptr;
+
+    (*index_root)->height = 1 + max(hauteur_node_index((*index_root)->left), hauteur_node_index((*index_root)->right));
+
+    *index_root = equilibrer_arbre_index(*index_root);
+
+    return res; 
 }
 
 void link_components(NetworkComponent* parent, NetworkComponent* child, double leak_p) {
@@ -113,7 +110,7 @@ void leaks(char* db_path, char* target_factory_id) {
         double lost_volume = calculate_total_leaks(root_factory, total_captured_for_factory);
         printf("Total volume lost for %s: %.3f M.m3\n", target_factory_id, lost_volume);
     } else {
-        printf("Usine non trouvée\n"); 
+        printf("-1\n"); 
     }
 
     fclose(file);

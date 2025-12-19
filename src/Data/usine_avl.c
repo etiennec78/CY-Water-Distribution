@@ -244,3 +244,18 @@ Facility* creerAVLLeaks(char* nom_fichier){
     fclose(fichier);
     return arbre_leaks;
 }
+
+
+
+void freeAll(NodeIndex* root) {
+    if (root == NULL) return;
+    
+    clean_leaks_memory(root->left);
+    clean_leaks_memory(root->right);
+    
+    if (root->component_ptr != NULL) {
+        free(root->component_ptr);
+    }
+    
+    free(root);
+}
