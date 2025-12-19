@@ -118,15 +118,19 @@ fi
 case "$3" in
     "max")
     data_file="data/vol_max.dat"
+    graph_file="data/vol_max.png"
     ;;
     "src")
     data_file="data/vol_captation.dat"
+    graph_file="data/vol_captation.png"
     ;;
     "real")
     data_file="data/vol_traitement.dat"
+    graph_file="data/vol_traitement.png"
     ;;
     *)
     data_file=""
+    graph_file=""
 esac
 
 # If the binary should create an output file
@@ -144,8 +148,15 @@ if [[ "$data_file" != "" ]]; then
     if [ $? -ne 0 ]; then
         echo "Erreur: Un problème est survenu en essayant d'afficher l'histogramme !"
     fi
+
+    # Check that the graph picture was created
+    if [ ! -f "$graph_file" ]; then
+        echo "Erreur: L'histogramme n'a pas été généré !"
+    fi
+
+    echo "Info: L'histogramme a été stocké à cet emplacement: $graph_file"
 fi
 
 end=$(date +%s%N)
 exec_time=$(( (end - start) / 1000000 ))
-echo "Fin de l'exécution en $((exec_time))ms"
+echo "Info: Fin de l'exécution en $((exec_time))ms"
