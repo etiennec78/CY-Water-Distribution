@@ -67,11 +67,12 @@ class Plotter:
     def parse_data(self) -> dict[str:list[float]]:
         """Parse the data from the file given as an argument.
 
-        Returns a dict value: {factory_id: value}."""
+        Returns a dictionary with the factory id as the key
+        and a list of floats as value."""
 
         result = {}
         with open(self.data_path, newline="") as data_file:
-            next(data_file)
+            next(data_file)  # Skip header
 
             spamreader = csv.reader(data_file, delimiter=";")
             for row in spamreader:
@@ -84,24 +85,32 @@ class Plotter:
 
         return result
 
-    def plot(self) -> None:
-        """Save the data parsed to a bar graph as a png."""
-        if self.data is None:
-            self.data = self.parse_data()
-
+    def get_filtered_data(self) -> dict[str:list[float]]:
+        """Summs up the float values of each factory id, then order them by asc,
+        and return a list of the 5 lowest and 5 highest factory values."""
         sorted_data = sorted(self.data.items(), key=lambda item: sum(item[1]))
         if len(sorted_data) > 10:
             filtered_data = sorted_data[:5] + sorted_data[-5:]
         else:
             filtered_data = sorted_data
+        return filtered_data
+
+    def plot(self) -> None:
+        """Save the data parsed to a bar graph as a png."""
+        if self.data is None:
+            self.data = self.parse_data()
+
+        filtered_data = self.get_filtered_data()
 
         xpoints = np.array([item[0] for item in filtered_data])
         ypoints = np.array([item[1] for item in filtered_data])
 
         plt.figure(figsize=(12, 6))
 
+        # Initialize the bottom of the bars to zero
         bottom = np.zeros(len(xpoints))
 
+        # Plot each layer of the stacked bar
         for i in range(ypoints.shape[1]):
             plt.bar(xpoints, ypoints[:, i], bottom=bottom)
             bottom += ypoints[:, i]
