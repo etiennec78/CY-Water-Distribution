@@ -66,7 +66,7 @@ class Plotter:
             for row in spamreader:
                 if len(row) != 2:
                     print("Error: The data file must contain 2 columns !")
-                    exit
+                    exit(2)
                 result.update({row[0]: float(row[1])})
 
         return result
