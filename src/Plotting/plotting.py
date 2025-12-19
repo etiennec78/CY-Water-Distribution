@@ -59,7 +59,7 @@ class Plotter:
         """Return the data path but change the extension to .png"""
         if "." not in self.data_path:
             print("Erreur: Le nom du fichier de données ne contient pas d'extension")
-            exit(3)
+            sys.exit(3)
 
         splitted = self.data_path.split(".")
         return ".".join(splitted[:-1]) + ".png"
@@ -80,7 +80,7 @@ class Plotter:
                     print(
                         "Erreur: Le fichier de données doit contenir au moins 2 colonnes !"
                     )
-                    exit(2)
+                    sys.exit(2)
                 result.update({row[0]: [float(val) for val in row[1:]]})
 
         return result
@@ -126,7 +126,7 @@ class Plotter:
 
 if __name__ == "__main__":
     if not check_args(sys.argv):
-        exit(1)
+        sys.exit(1)
 
     data_path = sys.argv[1]
     plotter = Plotter(data_path)
