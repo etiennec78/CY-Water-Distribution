@@ -71,7 +71,7 @@ class Plotter:
         and a list of floats as value."""
 
         result = {}
-        with open(self.data_path, newline="") as data_file:
+        with open(self.data_path, newline="", encoding="utf-8") as data_file:
             next(data_file)  # Skip header
 
             spamreader = csv.reader(data_file, delimiter=";")
