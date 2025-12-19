@@ -79,11 +79,15 @@ if [ ! -d src ]; then
     exit 7
 fi
 
-make
-
+# Check for the presence of the binary
 if [ ! -f bin/cwildwater ]; then
-    echo "Erreur: La compilation a échoué !"
-    exit 8
+
+    make
+
+    if [ ! -f bin/cwildwater ]; then
+        echo "Erreur: La compilation a échoué !"
+        exit 8
+    fi
 fi
 
 chmod +x bin/cwildwater
@@ -93,9 +97,3 @@ if [ ! -x cwildwater.sh ]; then
 fi
 
 ./bin/cwildwater $@
-make clean
-
-if [ -f bin/cwildwater ]; then
-    echo "Erreur: Le nettoyage a échoué !"
-    exit 9
-fi
