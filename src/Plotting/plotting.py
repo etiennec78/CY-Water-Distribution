@@ -46,12 +46,23 @@ class Plotter:
     """A class to store plotting related functions."""
 
     data_path: str
+    output_path: str
     data: dict[str:float] | None
 
     def __init__(self, data_path: str) -> None:
         """Init the plotter."""
         self.data_path = data_path
         self.data = None
+        self.output_path = self.get_output_path()
+
+    def get_output_path(self) -> str:
+        """Return the data path but change the extension to .png"""
+        if "." not in self.data_path:
+            print("Erreur: Le nom du fichier de données ne contient pas d'extension")
+            exit(3)
+
+        splitted = self.data_path.split(".")
+        return ".".join(splitted[:-1]) + ".png"
 
     def parse_data(self) -> dict[str:float]:
         """Parse the data from the file given as an argument.
@@ -65,14 +76,14 @@ class Plotter:
             spamreader = csv.reader(data_file, delimiter=";")
             for row in spamreader:
                 if len(row) != 2:
-                    print("Error: The data file must contain 2 columns !")
+                    print("Erreur: Le fichier de données doit contenir 2 colonnes !")
                     exit(2)
                 result.update({row[0]: float(row[1])})
 
         return result
 
     def plot(self) -> None:
-        """Display the data parsed on a bar graph."""
+        """Save the data parsed to a bar graph as a png."""
         if self.data is None:
             self.data = self.parse_data()
 
@@ -80,7 +91,7 @@ class Plotter:
         ypoints = np.array(list(self.data.values()))
 
         plt.bar(xpoints, ypoints)
-        plt.show()
+        plt.savefig(self.output_path)
 
 
 if __name__ == "__main__":
