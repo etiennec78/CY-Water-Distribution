@@ -101,6 +101,12 @@ fi
 
 ./bin/cwildwater $@
 
+# Check that the execution was successfull
+if [ $? -ne 0 ]; then
+    echo "Erreur: Un problème est survenu en exécutant le binaire !"
+fi
+
+
 # Check that Python is installed
 if [[ ! $(python --version 2>/dev/null) ]]; then
     echo "Erreur: Python n'est pas installé !"
@@ -133,6 +139,11 @@ if [[ "$3" != "" ]]; then
     fi
 
     python src/Plotting/plotting.py "$data_file"
+
+    # Check that the execution was successfull
+    if [ $? -ne 0 ]; then
+        echo "Erreur: Un problème est survenu en essayant d'afficher l'histogramme !"
+    fi
 fi
 
 end=$(date +%s%N)
