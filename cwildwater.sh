@@ -96,9 +96,44 @@ chmod +x bin/cwildwater
 
 if [ ! -x cwildwater.sh ]; then
     echo "Erreur: Le fichier binaire n'a pas pu être rendu exécutable !"
+    exit 9
 fi
 
 ./bin/cwildwater $@
+
+# Check that Python is installed
+if [[ ! $(python --version 2>/dev/null) ]]; then
+    echo "Erreur: Python n'est pas installé !"
+    exit 10
+fi
+
+# Get the location of the data file
+[[ "$3" == "max" ]]
+case "$3" in
+    "max")
+    data_file="data/vol_max.dat"
+    ;;
+    "src")
+    data_file="data/vol_captation.dat"
+    ;;
+    "real")
+    data_file="data/vol_traitement.dat"
+    ;;
+    *)
+    data_file=""
+esac
+
+# If the binary should create an output file
+if [[ "$3" != "" ]]; then
+
+    # Check that the output file exists
+    if [ ! -f "$data_file" ]; then
+        echo "Erreur: Le fichier de données n'a pas été créé !"
+        exit 11
+    fi
+
+    python src/Plotting/plotting.py "$data_file"
+fi
 
 end=$(date +%s%N)
 exec_time=$(( (end - start) / 1000000 ))
