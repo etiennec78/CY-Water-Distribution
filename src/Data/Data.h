@@ -60,6 +60,15 @@ typedef struct Resultat_Histo{
     double volume_capte;
 }Resultat_Histo;
 
+// if more than 2 childs
+typedef struct NetworkComponent {
+    FacilityType type;
+    char id[50];
+    double leak_percent;
+    
+    struct NetworkComponent* first_child;  
+    struct NetworkComponent* next_sibling; // Child on the same level
+} NetworkComponent;
 
 
 
