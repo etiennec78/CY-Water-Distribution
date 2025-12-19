@@ -134,7 +134,7 @@ exec_time=$(( (end - start) / 1000000 ))
 echo "Fin de l'exécution en $((exec_time))ms"
 
 # If the binary should create an output file
-if [[ "$3" != "" ]]; then
+if [[ "$data_file" != "" ]]; then
 
     # Check that the output file exists
     if [ ! -f "$data_file" ]; then
