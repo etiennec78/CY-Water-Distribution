@@ -53,9 +53,9 @@ Facility* parserLine(char* lineStr, Facility* arbre_usines) {
             arbre_usines = inserer_usine(arbre_usines, cols[1], atof(cols[3]), 0, FACTORY_TO_STORAGE, &h);
             break;
 
-        case STORAGE_TO_CUST :
-            arbre_usines = inserer_usine(arbre_usines, cols[2], atof(cols[3]), 0, STORAGE_TO_CUST, &h);  // contient les 3 derniers types de ligne
-            break;
+        // case STORAGE_TO_CUST :
+        //     arbre_usines = inserer_usine(arbre_usines, cols[2], atof(cols[3]), 0, STORAGE_TO_CUST, &h);  // contient les 3 derniers types de ligne
+        //     break;
 
         default:
             break;
