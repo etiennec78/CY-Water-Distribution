@@ -152,7 +152,8 @@ void free_avl_usine(Facility* racine){
     free(racine);
 }
 
- Facility* creerAVLMax(char* nom_fichier){
+ 
+ Facility* creerAVLMax(char* nom_fichier) {
     FILE* fichier = fopen(nom_fichier, "r");
     if (!fichier) {
         perror("Erreur ouverture fichier");
@@ -163,15 +164,24 @@ void free_avl_usine(Facility* racine){
     Facility* arbre_usines = NULL;
 
     while (fgets(ligne, sizeof(ligne), fichier)) {
+        
+        char ligne_copy[500];
+        strcpy(ligne_copy, ligne);
 
-        Facility* f = parserLine(ligne);
-        if (f == NULL){
+        Facility* f = parserLine(ligne_copy);
+        if (f == NULL) {
             continue;
         }
        
-        if (f->type == FACILITY_COMPLEX) {
-            arbre_usines = inserer_usine(arbre_usines,f->id,f->volume, 0.0,TYPE_CAPACITE_MAX);
+        if (f->type == FACILITY_COMPLEX && f->parent_id[0] == '\0') {
+            
+            arbre_usines = inserer_usine(arbre_usines, f->id, f->volume, 0.0, TYPE_CAPACITE_MAX);
+        } 
+        else if (f->parent_id[0] != '\0' && (f->type == SPRING || f->type == SOURCE)) {
+            
+            arbre_usines = inserer_usine(arbre_usines, f->parent_id, f->volume, f->leak, TYPE_SOURCE_USINE);
         }
+
         free(f);
     }
 
