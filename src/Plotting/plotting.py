@@ -87,10 +87,25 @@ class Plotter:
         if self.data is None:
             self.data = self.parse_data()
 
-        xpoints = np.array(list(self.data.keys()))
-        ypoints = np.array(list(self.data.values()))
+        sorted_data = sorted(self.data.items(), key=lambda item: item[1])
+        if len(sorted_data) > 10:
+            filtered_data = sorted_data[:5] + sorted_data[-5:]
+        else:
+            filtered_data = sorted_data
 
-        plt.bar(xpoints, ypoints)
+        xpoints = np.array([item[0] for item in filtered_data])
+        ypoints = np.array([item[1] for item in filtered_data])
+
+        plt.figure(figsize=(12, 6))
+        bars = plt.bar(xpoints, ypoints)
+
+        # Add value labels on top of bars
+        for bar in bars:
+            yval = bar.get_height()
+            plt.text(bar.get_x() + bar.get_width()/2, yval, round(yval, 2), va='bottom', ha='center')
+
+        plt.xticks(rotation=45, ha='right')
+        plt.tight_layout()
         plt.savefig(self.output_path)
 
 
