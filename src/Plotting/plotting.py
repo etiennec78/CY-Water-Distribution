@@ -36,7 +36,7 @@ Arguments:
     else:
         return True
 
-    print(f"{error_msg}\n\n")
+    print(f"{help_message}\n\n")
     print(f"Erreur: {error_msg} !")
 
     return False
