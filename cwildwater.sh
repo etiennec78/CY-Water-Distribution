@@ -116,48 +116,48 @@ fi
 # Get the location of the data file
 case "$3" in
     "max")
-    data_file="data/vol_max.dat"
-    graph_file="data/vol_max.png"
+    file_name="data/vol_max"
     ;;
     "src")
-    data_file="data/vol_captation.dat"
-    graph_file="data/vol_captation.png"
+    file_name="data/vol_captation"
     ;;
     "real")
-    data_file="data/vol_traitement.dat"
-    graph_file="data/vol_traitement.png"
+    file_name="data/vol_traitement"
     ;;
     "all")
-    data_file="data/histo_all.dat"
-    graph_file="data/histo_all.dat"
+    file_name="data/histo_all"
     ;;
     *)
-    data_file=""
-    graph_file=""
+    file_name=""
 esac
 
 # If the binary should create an output file
-if [[ "$data_file" != "" ]]; then
+if [[ "$file_name" != "" ]]; then
 
     # Check that the output file exists
-    if [ ! -f "$data_file" ]; then
+    if [ ! -f "$file_name.dat" ]; then
         echo "Erreur: Le fichier de données n'a pas été créé !"
         exit 11
     fi
 
-    python src/Plotting/plotting.py "$data_file"
+    python src/Plotting/plotting.py "$file_name.dat"
 
     # Check that the execution was successfull
     if [ $? -ne 0 ]; then
         echo "Erreur: Un problème est survenu en essayant de créer l'histogramme !"
+        exit 12
     fi
 
-    # Check that the graph picture was created
-    if [ ! -f "$graph_file" ]; then
-        echo "Erreur: L'histogramme n'a pas été généré !"
-    fi
+    for suffix in "low" "high"; do
+        # Check that the graph picture was created
+        png_file="${file_name}_${suffix}.png"
+        if [ ! -f "$png_file" ]; then
+            echo "Erreur: Un des histogrammes n'a pas été généré !"
+            exit 13
+        fi
 
-    echo "Info: L'histogramme a été stocké à cet emplacement: $graph_file"
+        echo "Info: L'histogramme $suffix a été stocké à cet emplacement: `pwd`/$png_file"
+    done
 fi
 
 end=$(date +%s%N)

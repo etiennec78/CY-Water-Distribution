@@ -46,23 +46,24 @@ class Plotter:
     """A class to store plotting related functions."""
 
     data_path: str
-    output_path: str
     data: dict[str:list[float]] | None
 
     def __init__(self, data_path: str) -> None:
         """Init the plotter."""
+
         self.data_path = data_path
         self.data = None
-        self.output_path = self.get_output_path()
 
-    def get_output_path(self) -> str:
-        """Return the data path but change the extension to .png"""
+    def get_output_path(self, suffix: str) -> str:
+        """Return the data path but add a suffix
+        and change the extension to .png"""
+
         if "." not in self.data_path:
             print("Erreur: Le nom du fichier de données ne contient pas d'extension")
             sys.exit(3)
 
         splitted = self.data_path.split(".")
-        return ".".join(splitted[:-1]) + ".png"
+        return ".".join(splitted[:-1]) + f"_{suffix}.png"
 
     def parse_data(self) -> dict[str:list[float]]:
         """Parse the data from the file given as an argument.
@@ -85,43 +86,46 @@ class Plotter:
 
         return result
 
-    def get_filtered_data(self) -> dict[str:list[float]]:
-        """Summs up the float values of each factory id, then order them by asc,
-        and return a list of the 5 lowest and 5 highest factory values."""
-        sorted_data = sorted(self.data.items(), key=lambda item: sum(item[1]))
-        if len(sorted_data) > 10:
-            filtered_data = sorted_data[:5] + sorted_data[-5:]
-        else:
-            filtered_data = sorted_data
-        return filtered_data
+    def get_filtered_data(self, mode: str) -> list:
+        """Get the 50 lowest values or 10 highest ones,
+        depending on the mode, sorted by capacity."""
+
+        sorted_data = sorted(self.data.items(), key=lambda item: item[1][0])
+
+        if mode == "low":
+            return sorted_data[:50]
+      
+        return sorted_data[-10:]
 
     def plot(self) -> None:
-        """Save the data parsed to a bar graph as a png."""
+        """Save the data parsed to two bar graphs as png."""
+
         if self.data is None:
             self.data = self.parse_data()
 
-        filtered_data = self.get_filtered_data()
+        for mode in "low", "high":
+            filtered_data = self.get_filtered_data(mode)
 
-        xpoints = np.array([item[0] for item in filtered_data])
-        ypoints = np.array([item[1] for item in filtered_data])
+            xpoints = np.array([item[0] for item in filtered_data])
+            ypoints = np.array([item[1] for item in filtered_data])
 
-        plt.figure(figsize=(12, 6))
+            plt.figure(figsize=(12, 6))
 
-        # Initialize the bottom of the bars to zero
-        bottom = np.zeros(len(xpoints))
+            # Initialize the bottom of the bars to zero
+            bottom = np.zeros(len(xpoints))
 
-        # Plot each layer of the stacked bar
-        for i in range(ypoints.shape[1]):
-            plt.bar(xpoints, ypoints[:, i], bottom=bottom)
-            bottom += ypoints[:, i]
+            # Plot each layer of the stacked bar
+            for i in range(ypoints.shape[1]):
+                plt.bar(xpoints, ypoints[:, i], bottom=bottom)
+                bottom += ypoints[:, i]
 
-        # Add value labels on top of bars
-        for i, total in enumerate(bottom):
-            plt.text(i, total, round(total, 2), va="bottom", ha="center")
+            # Add value labels on top of bars
+            for i, total in enumerate(bottom):
+                plt.text(i, total, round(total, 2), va="bottom", ha="center")
 
-        plt.xticks(rotation=45, ha="right")
-        plt.tight_layout()
-        plt.savefig(self.output_path)
+            plt.xticks(rotation=45, ha="right")
+            plt.tight_layout()
+            plt.savefig(self.get_output_path(mode))
 
 
 if __name__ == "__main__":
