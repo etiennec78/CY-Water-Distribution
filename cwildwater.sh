@@ -149,7 +149,7 @@ if [[ "$data_file" != "" ]]; then
 
     # Check that the execution was successfull
     if [ $? -ne 0 ]; then
-        echo "Erreur: Un problème est survenu en essayant d'afficher l'histogramme !"
+        echo "Erreur: Un problème est survenu en essayant de créer l'histogramme !"
     fi
 
     # Check that the graph picture was created
