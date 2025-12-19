@@ -17,17 +17,30 @@ double get_volume_traite(Facility* f) {
     return f->volume_traite;
 }
 
-void print_avl_reverse(Facility* node, FILE* f, capacity_getter getter) {
+void print_avl_reverse_max(Facility* node, FILE* f) {
     if (node == NULL) return;
-    print_avl_reverse(node->droite, f, getter);
-    fprintf(f, "%s;%f\n", node->id, getter(node));
-    print_avl_reverse(node->gauche, f, getter);
+    print_avl_reverse_max(node->droite, f);
+    if(node->type_ligne == FACTORY_ONLY) fprintf(f, "%s;%f\n", node->id, node->capacite_max);
+    print_avl_reverse_max(node->gauche, f);
+}
+
+void print_avl_reverse_src(Facility* node, FILE* f) {
+    if (node == NULL) return;
+    print_avl_reverse_src(node->droite, f);
+    fprintf(f, "%s;%f\n", node->id, node->volume_capte);
+    print_avl_reverse_src(node->gauche, f);
+}
+
+void print_avl_reverse_real(Facility* node, FILE* f) {
+    if (node == NULL) return;
+    print_avl_reverse_real(node->droite, f);
+    fprintf(f, "%s;%f\n", node->id, node->volume_traite);
+    print_avl_reverse_real(node->gauche, f);
 }
 
 void histogramme(char* db_path, char* histo_type) {
     Facility* avl;
     char* filePath;
-    capacity_getter getter;
     char* dataTitle;
 
     avl = creerAVLMax(db_path);
@@ -36,40 +49,58 @@ void histogramme(char* db_path, char* histo_type) {
         return;
     }
 
+
     if (strcmp(histo_type, "max") == 0) {
         filePath = "data/vol_max.dat";
-        getter = get_capacite_max;
-        dataTitle = "Capacité maximale";
+
+        FILE* f = fopen(filePath, "w");
+        if (f == NULL) {
+            perror("Erreur création fichier de sortie");
+            free_avl_usine(avl);
+            return;
+        }
+
+        fprintf(f, "usine_id;maximum_volume\n");
+        print_avl_reverse_max(avl, f);
+
+        fclose(f);
+
     }
     else if (strcmp(histo_type, "src") == 0) {
         filePath = "data/vol_captation.dat";
-        getter = get_volume_capte;
-        dataTitle = "Volume capté";
+
+        FILE* f = fopen(filePath, "w");
+        if (f == NULL) {
+            perror("Erreur création fichier de sortie");
+            free_avl_usine(avl);
+            return;
+        }
+
+        fprintf(f, "usine_id;source_volume\n");
+        print_avl_reverse_src(avl, f);
+    
+        fclose(f);
     }
     else if (strcmp(histo_type, "real") == 0){
         filePath = "data/vol_traitement.dat";
-        getter = get_volume_traite;
-        dataTitle = "Volume traité";
+
+        FILE* f = fopen(filePath, "w");
+        if (f == NULL) {
+            perror("Erreur création fichier de sortie");
+            free_avl_usine(avl);
+            return;
+        }
+
+        fprintf(f, "usine_id;treated_volume\n");
+        print_avl_reverse_real(avl, f);
+    
+        fclose(f);
+
     }
     else{
         printf("Argument non valide");
         return;
     }
 
-    FILE* f = fopen(filePath, "w");
-    if (f == NULL) {
-        perror("Erreur création fichier de sortie");
-        free_avl_usine(avl);
-        return;
-    }
-
-    char title[50];
-    strcat(title, "Usine");
-    strcat(title, dataTitle);
-    strcat(title, "\n");
-    fprintf(f, "%s", title);
-    print_avl_reverse(avl, f, getter);
-
-    fclose(f);
     free_avl_usine(avl);
 }

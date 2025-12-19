@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     } 
 
     else if (strcmp(mode, "leaks") == 0) {
-        leaks(db_path, sub_arg);
+       // leaks(db_path, sub_arg);
     } 
     else {
         return 1;

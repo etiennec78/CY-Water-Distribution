@@ -3,128 +3,63 @@
 #include <string.h>
 #include "Parser.h"
 #include "../Data/Data.h"
-
-FacilityType conversionCharToType(char* mot){
-    char* type[20] = {"-", "Source", "Spring", "Pond", "Catchment", "Well", "Resurgence", "Intake", "Borehole", "Fountain", "Reservoir", "Forage", "Well field", "Tank", "Unit", "Module", "Facility complex", "Storage", "Junction", "Cust"};
-    FacilityType facilityType[20] = {NONE, SOURCE, SPRING, POND, CATCHMENT, WELL, RESURGENCE, INTAKE, BOREHOLE, FOUNTAIN, RESERVOIR, FORAGE, WELL_FIELD, TANK, UNIT, MODULE, FACILITY_COMPLEX, STORAGE, JUNCTION, CUST};
-
-    for(int i = 0; i < 20; i++){
-        if(strstr(mot, type[i]) != NULL){
-            return facilityType[i];
-        }
-    }
-    return TYPE_UNKNOWN;
-}
+#include "../Data/usine_avl.h"
 
 LineType detectLineType(char** cols) {
-
-    const char* FACTORY_STRUCTURES[FACTORY_STRUCT_LEN][COL_CHECK_LEN] = {
-        {"-", "Spring", "Facility complex"},
-        {"-", "Facility complex", "-"},
-        {"-", "Facility complex", "Storage"},
-        {"Facility complex", "Storage", "Junction"},
-        {"Facility complex", "Junction", "Service"},
-        {"Facility complex", "Service", "Cust"}
-    };
-
-    // For each factory structure
-    for (int i=SOURCE_TO_FACTORY; i<=SERVICE_TO_CUST; i++) {
-        int valid = 1;
-
-        // For each factory structure element
-        for (int j=0; j<COL_CHECK_LEN; j++) {
-
-            // Skip this model if the column is different from the column model
-            if (strstr(cols[j], FACTORY_STRUCTURES[i-1][j]) == NULL) {
-                valid = 0;
-                break;
-            }
-        }
-
-        // If the loop finished without a break
-        if (valid) {
-            // Return the related line type
-            return i;
-        }
+    if (cols == NULL || cols[0] == NULL || cols[1] == NULL || cols[2] == NULL) {
+        return UNKNOWN;
     }
 
+    int c1_dash = (strcmp(cols[0], "-") == 0);
+    int c2_dash = (strcmp(cols[1], "-") == 0);
+    int c3_dash = (strcmp(cols[2], "-") == 0);
+    int c4_dash = (strcmp(cols[3], "-") == 0);
+    int c5_dash = (strcmp(cols[4], "-") == 0);
+    
+
+    if (c1_dash && c3_dash && c5_dash) {    
+        return FACTORY_ONLY;
+    } else if(c1_dash && c4_dash){
+        return FACTORY_TO_STORAGE;
+    } else if(c1_dash){
+        return SOURCE_TO_FACTORY;
+    } else if(c4_dash){
+        return STORAGE_TO_CUST; //contient les 3 derniers types de ligne
+    }
+    
     return UNKNOWN;
 }
 
-
-Facility* parserLine(char* lineStr) {
+Facility* parserLine(char* lineStr, Facility* arbre_usines) {
     char* cols[COL_LEN];
     for (int i=0; i<COL_LEN; i++) {
         cols[i] = strtok(lineStr, ";");
-        if (lineStr != NULL) {
-            lineStr = NULL;
-        }
+        lineStr = NULL;
     }
 
-    Facility* facility = malloc(sizeof(Facility));
-    if (facility == NULL){
-        return NULL;
-    }
-
+    int h = 0;
     LineType lineType = detectLineType(cols);
 
     switch(lineType) {
         case SOURCE_TO_FACTORY:
-            facility->type = conversionCharToType(cols[1]);  // col1 = Spring
-            strcpy(facility->id, cols[1]);
-            strcpy(facility->parent_id, cols[2]);           // col2 = Facility complex
-            facility->volume = atof(cols[3]);
-            facility->leak = atof(cols[4]);
+            arbre_usines = inserer_usine(arbre_usines, cols[2], atof(cols[3]), atof(cols[4]), SOURCE_TO_FACTORY, &h);
             break;
 
         case FACTORY_ONLY:
-            facility->type = conversionCharToType(cols[1]);  // col1 = Facility complex
-            strcpy(facility->id, cols[1]);
-            facility->parent_id[0] = '\0';                // Pas de parent
-            facility->volume = atof(cols[3]);
-            facility->leak = 0;
+            arbre_usines = inserer_usine(arbre_usines, cols[1], atof(cols[3]), 0, FACTORY_ONLY, &h);
             break;
 
         case FACTORY_TO_STORAGE:
-            facility->type = conversionCharToType(cols[2]);  // col2 = Storage
-            strcpy(facility->id, cols[2]);
-            strcpy(facility->parent_id, cols[1]);           // col1 = Facility complex
-            facility->volume = atof(cols[3]);
-            facility->leak = 0;
+            arbre_usines = inserer_usine(arbre_usines, cols[1], atof(cols[3]), 0, FACTORY_TO_STORAGE, &h);
             break;
 
-        case STORAGE_TO_JUNCTION:
-            facility->type = conversionCharToType(cols[2]);  // col2 = Junction
-            strcpy(facility->id, cols[2]);
-            strcpy(facility->parent_id, cols[1]);           // col1 = Storage
-            facility->volume = atof(cols[3]);
-            facility->leak = 0;
-            break;
-
-        case JUNCTION_TO_SERVICE:
-            facility->type = conversionCharToType(cols[2]);  // col2 = Service
-            strcpy(facility->id, cols[2]);
-            strcpy(facility->parent_id, cols[1]);           // col1 = Junction
-            facility->volume = atof(cols[3]);
-            facility->leak = 0;
-            break;
-
-        case SERVICE_TO_CUST:
-            facility->type = conversionCharToType(cols[2]);  // col2 = Cust
-            strcpy(facility->id, cols[2]);
-            strcpy(facility->parent_id, cols[1]);           // col1 = Service
-            facility->volume = atof(cols[3]);
-            facility->leak = 0;
+        case STORAGE_TO_CUST :
+            arbre_usines = inserer_usine(arbre_usines, cols[2], atof(cols[3]), 0, STORAGE_TO_CUST, &h);  // contient les 3 derniers types de ligne
             break;
 
         default:
-            facility->type = TYPE_UNKNOWN;
-            facility->id[0] = '\0';
-            facility->parent_id[0] = '\0';
-            facility->volume = 0;
-            facility->leak = 0;
             break;
     }
 
-    return facility;
+    return arbre_usines;
 }

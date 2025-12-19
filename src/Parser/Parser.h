@@ -7,8 +7,7 @@
 #define FACTORY_STRUCT_LEN 6
 
 int countLine();
-FacilityType conversionCharToType(char* mot);
 LineType detectLineType(char** cols);
-Facility* parserLine(char* lineStr);
+Facility* parserLine(char* lineStr, Facility* arbre_usines);
 
 #endif

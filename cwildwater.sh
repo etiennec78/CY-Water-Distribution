@@ -129,10 +129,6 @@ case "$3" in
     data_file=""
 esac
 
-end=$(date +%s%N)
-exec_time=$(( (end - start) / 1000000 ))
-echo "Fin de l'exécution en $((exec_time))ms"
-
 # If the binary should create an output file
 if [[ "$data_file" != "" ]]; then
 
@@ -149,3 +145,7 @@ if [[ "$data_file" != "" ]]; then
         echo "Erreur: Un problème est survenu en essayant d'afficher l'histogramme !"
     fi
 fi
+
+end=$(date +%s%N)
+exec_time=$(( (end - start) / 1000000 ))
+echo "Fin de l'exécution en $((exec_time))ms"

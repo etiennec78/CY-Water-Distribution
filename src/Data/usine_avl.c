@@ -17,44 +17,42 @@ int max(int a, int b) {
     }
 }
 
-int hauteur_node(Facility *n) {
-    if (n == NULL) {
-        return 0; 
+int min(int a, int b) {
+    if(a < b){
+        return a;
+    }else{
+        return b;
     }
-    return n->hauteur;
 }
 
-int equilibrage(Facility* n){
-    if(n==NULL){
-        return 0;
-    }
-    return hauteur_node(n->droite) - hauteur_node(n->gauche);
+Facility *rotation_gauche_usine(Facility *avl) {
+    Facility *pivot = avl->droite;
+    
+    avl->droite = pivot->gauche;
+    pivot->gauche = avl;
+
+    int equilibreAVL = avl->equilibre;
+    int equilibrePivot = pivot->equilibre;
+
+    avl->equilibre = equilibreAVL - max(equilibrePivot, 0) - 1;
+    pivot->equilibre = min(min(equilibreAVL - 2, equilibreAVL + equilibrePivot - 2), equilibrePivot - 1);
+
+    return pivot;
 }
 
-Facility *rotation_gauche_usine(Facility *a) {
-    Facility *b = a->droite;
-    Facility *T2 = b->gauche; 
+Facility *rotation_droite_usine(Facility *avl) {
+    Facility *pivot = avl->gauche;
+    
+    avl->gauche = pivot->droite;
+    pivot->droite = avl;
 
-    b->gauche = a;
-    a->droite = T2; 
+    int equilibreAVL = avl->equilibre;
+    int equilibrePivot = pivot->equilibre;
 
-    a->hauteur =  1 + max(hauteur_node(a->gauche), hauteur_node(a->droite));
-    b->hauteur =  1 + max(hauteur_node(b->gauche), hauteur_node(b->droite));
+    avl->equilibre = equilibreAVL - max(equilibrePivot, 0) + 1;
+    pivot->equilibre = max(max(equilibreAVL + 2, equilibreAVL + equilibrePivot + 2), equilibrePivot + 1);
 
-    return b; 
-}
-
-Facility *rotation_droite_usine(Facility *a) {
-    Facility *b = a->gauche;
-    Facility *T2 = b->droite; 
-
-    b->droite = a;
-    a->gauche = T2; 
-
-    a->hauteur = max(hauteur_node(a->gauche), hauteur_node(a->droite)) + 1;
-    b->hauteur = max(hauteur_node(b->gauche), hauteur_node(b->droite)) + 1;
-
-    return b; 
+    return pivot;
 }
 
 Facility *rotation_droite_gauche_usine(Facility *n) {
@@ -67,30 +65,26 @@ Facility *rotation_gauche_droite_usine(Facility *n) {
     return rotation_droite_usine(n);
 }
 
-Facility *equilibrer_arbre(Facility *n) {
-    if (n == NULL) return n;
+Facility *equilibrer_arbre(Facility *avl) {
+    if (avl == NULL) return avl;
 
-    n->hauteur = max(hauteur_node(n->gauche), hauteur_node(n->droite)) + 1;
-
-    int balance = equilibrage(n);
-
-    if (balance > 1) { 
-        if (equilibrage(n->droite) >= 0) {
-            return rotation_gauche_usine(n);
+    if (avl->equilibre > 1) { 
+        if (avl->droite->equilibre >= 0) {
+            return rotation_gauche_usine(avl);
         } else { 
-            return rotation_droite_gauche_usine(n);
+            return rotation_droite_gauche_usine(avl);
         }
-    } else if (balance < -1) { 
-        if (equilibrage(n->gauche) <= 0) { 
-            return rotation_droite_usine(n);
+    } else if (avl->equilibre < -1) { 
+        if (avl->gauche->equilibre <= 0) { 
+            return rotation_droite_usine(avl);
         } else { 
-            return rotation_gauche_droite_usine(n);
+            return rotation_gauche_droite_usine(avl);
         }
     }
-    return n;
+    return avl;
 }
 
-Facility *nouvelle_usine(char *id, double capacite_max) {
+Facility *nouvelle_usine(char *id, double capacite_max, LineType type_ligne) {
     Facility *new_node = malloc(sizeof(Facility));
     if (new_node == NULL) {
         return NULL;
@@ -102,45 +96,51 @@ Facility *nouvelle_usine(char *id, double capacite_max) {
     new_node->volume = 0.0;
     new_node->leak = 0.0;
     new_node->parent_id[0] = '\0';
+    new_node->type_ligne = type_ligne;
     
     new_node->capacite_max = capacite_max;
     new_node->gauche = NULL;
     new_node->droite = NULL;
     new_node->volume_traite = 0.0;
     new_node->volume_capte = 0.0;
-    new_node->hauteur = 1;
+    new_node->equilibre = 0;
     
     return new_node;
 }
-Facility *inserer_usine(Facility *racine, char *id, double vol_info, double pourcentage_fuite, int type_ligne) {
+Facility *inserer_usine(Facility *racine, char *id, double vol_info, double pourcentage_fuite, LineType type_ligne, int *h) {
     if (racine == NULL) {
-        if (type_ligne == TYPE_CAPACITE_MAX) {
-            return nouvelle_usine(id, vol_info/1000);
-        }
-        if (type_ligne == TYPE_SOURCE_USINE || type_ligne == TYPE_USINE_STOCKAGE) {
-            return nouvelle_usine(id, 0); 
-        }
-        return NULL; 
+        *h = 1;
+        return nouvelle_usine(id, vol_info/1000, type_ligne);
     }
 
     int cmp = strcmp(id, racine->id);
 
     if (cmp < 0) {
-        racine->gauche = inserer_usine(racine->gauche, id, vol_info, pourcentage_fuite, type_ligne);
+        racine->gauche = inserer_usine(racine->gauche, id, vol_info, pourcentage_fuite, type_ligne, h);
+        *h = -*h;
     } else if (cmp > 0) {
-        racine->droite = inserer_usine(racine->droite, id, vol_info, pourcentage_fuite, type_ligne);
+        racine->droite = inserer_usine(racine->droite, id, vol_info, pourcentage_fuite, type_ligne, h);
     } else {
-        if (type_ligne == TYPE_CAPACITE_MAX) {
-            racine->capacite_max = vol_info;
-        } else if (type_ligne == TYPE_SOURCE_USINE) {
-            racine->volume_capte += vol_info; 
-            double volume_net_traite = vol_info *(1.0 -(pourcentage_fuite/100.0));
-            racine->volume_traite += volume_net_traite;
-        } 
+        racine->capacite_max = vol_info;
+        racine->volume_capte += vol_info;
+        double volume_net_traite = vol_info *(1.0 -(pourcentage_fuite/100.0));
+        racine->volume_traite += volume_net_traite;
+        *h = 0;
         return racine;
     }
 
-    return equilibrer_arbre(racine);
+    if (*h != 0){
+        racine->equilibre = racine->equilibre + *h;
+        racine = equilibrer_arbre(racine);
+
+        if(racine->equilibre == 0){
+            *h = 0;
+        }else{
+            *h = 1;
+        }
+    }
+
+    return racine;
 }
 
 void free_avl_usine(Facility* racine){
@@ -164,25 +164,9 @@ void free_avl_usine(Facility* racine){
     Facility* arbre_usines = NULL;
 
     while (fgets(ligne, sizeof(ligne), fichier)) {
-        
-        char ligne_copy[500];
-        strcpy(ligne_copy, ligne);
+        ligne[strcspn(ligne, "\n")] = '\0';
 
-        Facility* f = parserLine(ligne_copy);
-        if (f == NULL) {
-            continue;
-        }
-       
-        if (f->type == FACILITY_COMPLEX && f->parent_id[0] == '\0') {
-            
-            arbre_usines = inserer_usine(arbre_usines, f->id, f->volume, 0.0, TYPE_CAPACITE_MAX);
-        } 
-        else if (f->parent_id[0] != '\0' && (f->type == SPRING || f->type == SOURCE)) {
-            
-            arbre_usines = inserer_usine(arbre_usines, f->parent_id, f->volume, f->leak, TYPE_SOURCE_USINE);
-        }
-
-        free(f);
+        arbre_usines = parserLine(ligne, arbre_usines);
     }
 
     fclose(fichier);
@@ -200,8 +184,7 @@ Facility *inserer_usine_leak(Facility *racine, char *id, double perte) {
         // Initialisation complète
         strncpy(new_node->id, id, 49);
         new_node->id[49] = '\0';   
-        new_node->parent_id[0] = '\0';
-        new_node->type = NONE;      
+        new_node->parent_id[0] = '\0';    
         new_node->volume = 0.0;
         new_node->capacite_max = 0.0;
         new_node->volume_capte = 0.0;
@@ -209,7 +192,7 @@ Facility *inserer_usine_leak(Facility *racine, char *id, double perte) {
         new_node->volume_perdu = perte;
         new_node->gauche = NULL;
         new_node->droite = NULL;
-        new_node->hauteur = 1;
+        new_node->equilibre = 0;
 
         return new_node;
     }
@@ -230,29 +213,29 @@ Facility *inserer_usine_leak(Facility *racine, char *id, double perte) {
 }
 
 Facility* creerAVLLeaks(char* nom_fichier){
-    FILE* fichier = fopen(nom_fichier, "r");
-    if (!fichier) {
-        printf("Erreur ouverture fichier %s\n", nom_fichier);
-        return NULL;
-    }
+    // FILE* fichier = fopen(nom_fichier, "r");
+    // if (!fichier) {
+    //     printf("Erreur ouverture fichier %s\n", nom_fichier);
+    //     return NULL;
+    // }
     
-    char ligne[500];
-    Facility* arbre_leaks = NULL;
+    // char ligne[500];
+    // Facility* arbre_leaks = NULL;
 
-    while (fgets(ligne, sizeof(ligne), fichier)) {
-        Facility* f = parserLine(ligne);
-        if (f == NULL){
-            continue;
-        }
+    // while (fgets(ligne, sizeof(ligne), fichier)) {
+    //     Facility* f = parserLine(ligne,);
+    //     if (f == NULL){
+    //         continue;
+    //     }
 
-        if (f->type == SOURCE || f->type == SPRING) {
-            arbre_leaks = inserer_usine_leak(arbre_leaks, f->parent_id, f->volume_perdu);
-        }
-        free(f);
-    }
+    //     if (f->type == SOURCE || f->type == SPRING) {
+    //         arbre_leaks = inserer_usine_leak(arbre_leaks, f->parent_id, f->volume_perdu);
+    //     }
+    //     free(f);
+    // }
 
-    fclose(fichier);
-    return arbre_leaks;
+    // fclose(fichier);
+    // return arbre_leaks;
 }
 
 
