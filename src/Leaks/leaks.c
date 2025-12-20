@@ -1,190 +1,179 @@
-// #include <stdio.h>
-// #include "../Data/Data.h"
-
-// #include <stdlib.h>
-// #include <string.h>
-// #include "../Parser/Parser.h" 
-// #include "../Data/usine_avl.h" 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "leaks.h"
+#include "../Data/Data.h"
 
 
-// int hauteur_index(NodeIndex* n) {
-//     if (n == NULL) {
-//         return 0;
-//     }
-//     return n->height; 
-// }
-// int equilibre_index(NodeIndex* n){
-//     if(n == NULL) return 0;
-//     return hauteur_index(n->right) - hauteur_index(n->left);
-// }
+void freeAll(NodeIndex* root) {
+    if (root == NULL) return;
+
+    freeAll(root->left);
+    freeAll(root->right);
+    if (root->component_ptr != NULL) {
+        free(root->component_ptr);
+    }
+    free(root);
+}
+NetworkComponent* find_or_create_component(NodeIndex** root, char* id) {
+    if (*root == NULL) {
+        NetworkComponent* new_comp = malloc(sizeof(NetworkComponent));
+        if (!new_comp) return NULL;
+        strncpy(new_comp->id, id, 49);
+        new_comp->id[49] = '\0';
+        new_comp->leak_percent = 0;
+        new_comp->first_child = NULL;
+        new_comp->next_sibling = NULL;
+
+        *root = malloc(sizeof(NodeIndex));
+        if (!(*root)) { free(new_comp); return NULL; }
+        strncpy((*root)->id, id, 49);
+        (*root)->id[49] = '\0';
+        (*root)->component_ptr = new_comp;
+        (*root)->left = (*root)->right = NULL;
+        (*root)->height = 1;
+        return new_comp;
+    }
+
+    int cmp = strcmp(id, (*root)->id);
+    if (cmp < 0) return find_or_create_component(&((*root)->left), id);
+    if (cmp > 0) return find_or_create_component(&((*root)->right), id);
+    return (*root)->component_ptr;
+}
 
 
-
-// NodeIndex* rotation_gauche_index(NodeIndex* a) {
-//     NodeIndex* b = a->right;
-//     NodeIndex* T2 = b->left;
-//     b->left = a;
-//     a->right = T2;
-//     a->height = 1 + max(hauteur_index(a->left), hauteur_index(a->right));
-//     b->height = 1 + max(hauteur_index(b->left), hauteur_index(b->right));
-//     return b;
-// }
-
-// NodeIndex* rotation_droite_index(NodeIndex* a) {
-//     NodeIndex* b = a->left;
-//     NodeIndex* T2 = b->right;
-//     b->right = a;
-//     a->left = T2;
-//     a->height = 1 + max(hauteur_index(a->left), hauteur_index(a->right));
-//     b->height = 1 + max(hauteur_index(b->left), hauteur_index(b->right));
-//     return b;
-// }
-
-// NodeIndex* equilibrer_arbre_index(NodeIndex* n) {
-//     if (n == NULL) return n;
-//     n->height = 1 + max(hauteur_index(n->left), hauteur_index(n->right));
-//     int balance = equilibre_index(n);
-
-//     if (balance > 1) { 
-//         if (equilibre_index(n->right) < 0){
-//             n->right = rotation_droite_index(n->right);
-//         }else{
-//             return rotation_gauche_index(n);
-//         }
-//     }
-//     if (balance < -1) { 
-//         if (equilibre_index(n->left) > 0){
-//             n->left = rotation_gauche_index(n->left);
-//         }else{
-//             return rotation_droite_index(n);
-//         }
-//     }
-//     return n;
-// }
-
-
-// NetworkComponent* find_or_create_component(NodeIndex** index_root, char* id, FacilityType type) {
-//     if (*index_root == NULL) {
-//         NetworkComponent* new_comp = malloc(sizeof(NetworkComponent));
-//         strncpy(new_comp->id, id, 49);
-//         new_comp->id[49] = '\0';
-//         new_comp->type = type;
-//         new_comp->leak_percent = 0;
-//         new_comp->first_child = NULL;
-//         new_comp->next_sibling = NULL;
-
-//         *index_root = malloc(sizeof(NodeIndex));
-//         strncpy((*index_root)->id, id, 49);
-//         (*index_root)->id[49] = '\0';
-//         (*index_root)->component_ptr = new_comp;
-//         (*index_root)->left = (*index_root)->right = NULL;
-//         (*index_root)->height = 1;
-
-//         return new_comp;
-//     }
-
-//     int cmp = strcmp(id, (*index_root)->id);
-//     NetworkComponent* res = NULL; 
-
-//     if (cmp < 0){
-//         res = find_or_create_component(&((*index_root)->left), id, type);
-//     } else if (cmp > 0){
-//         res = find_or_create_component(&((*index_root)->right), id, type);
-//     } else {
-//         return (*index_root)->component_ptr; 
-//     }
-
-//     (*index_root)->height = 1 + max(hauteur_index((*index_root)->left), hauteur_index((*index_root)->right));
-
-//     *index_root = equilibrer_arbre_index(*index_root);
-
-//     return res; 
-// }
-
-// void link_components(NetworkComponent* parent, NetworkComponent* child, double leak_p) {
-//     if (parent == NULL || child == NULL){
-//         return;
-//     }
-//     child->leak_percent = leak_p;
+NetworkComponent* rechercher_composant_par_id(NodeIndex* root, char* target_id) {
+    if (root == NULL) return NULL;
+    if (strstr(root->id, target_id) != NULL) return root->component_ptr;
     
-//     // Add the child to the parent's list
-//     child->next_sibling = parent->first_child;
-//     parent->first_child = child;
-// }
+    NetworkComponent* res = rechercher_composant_par_id(root->left, target_id);
+    if (res != NULL) return res;
+    return rechercher_composant_par_id(root->right, target_id);
+}
 
-// double calculate_total_leaks(NetworkComponent* current, double incoming_volume) {
-//     if (current == NULL) {
-//         return 0.0;
-//     }
+double calculate_recursive_volume(NetworkComponent* current, double volume_in) {
+    if (!current || volume_in <= 0) return 0;
 
-//     double volume_after_leak = incoming_volume * (1.0 - (current->leak_percent / 100.0));
-//     double loss_in_this_segment = incoming_volume - volume_after_leak;
+    double volume_out = volume_in * (1.0 - (current->leak_percent / 100.0));
 
-//     // Count children to distribute the water equally
-//     int children_count = 0;
-//     NetworkComponent* child = current->first_child;
-//     while (child != NULL) {
-//         children_count++;
-//         child = child->next_sibling;
-//     }
+    if (current->first_child == NULL) {
+        return volume_out;
+    }
 
-//     double downstream_losses = 0.0;
-//     if (children_count > 0) {
-//         double volume_per_child = volume_after_leak / children_count;
+    int count = 0;
+    NetworkComponent* child = current->first_child;
+    while (child) {
+        count++;
+        child = child->next_sibling;
+    }
+
+    double total_delivered = 0;
+    child = current->first_child;
+    while (child) {
+        total_delivered += calculate_recursive_volume(child, volume_out / (double)count);
+        child = child->next_sibling;
+    }
+    return total_delivered;
+}
+
+NodeIndex* chargerReseauLeaks(char* nom_fichier, char* target_id, double* total_vol_entrant) {
+    FILE* fichier = fopen(nom_fichier, "r");
+    if (fichier == NULL){
+        return NULL;
+    }
+    char ligne[1024];
+    NodeIndex* index_root = NULL;
+    *total_vol_entrant = 0.0;
+
+    while (fgets(ligne, sizeof(ligne), fichier)) {
+        ligne[strcspn(ligne, "\r\n")] = 0;
+        if (strlen(ligne) < 5) continue;
+
+        char* tmp = strdup(ligne);
+        char* cols[6] = {NULL};
+        int i = 0;
+        char* token = strtok(tmp, ";");
         
-//         child = current->first_child;
-//         while (child != NULL) {
-//             downstream_losses += calculate_total_leaks(child, volume_per_child);
-//             child = child->next_sibling;
-//         }
-//     }
+        while (token && i < 6) {
+            cols[i++] = token;
+            token = strtok(NULL, ";");
+        }
 
-//     return loss_in_this_segment + downstream_losses;
-// }
+        if (i >= 4) {
+            char* id_parent = cols[1];
+            char* id_enfant = cols[2];
+            double vol;
+            if (strcmp(cols[3], "-") != 0) {
+                vol = atof(cols[3]);
+            } else {
+                vol = 0.0;
+            }
 
+            double leak;
+            if (i >= 5 && strcmp(cols[4], "-") != 0) {
+                leak = atof(cols[4]);
+            } else {
+                leak = 0.0;
+            }
 
+            if (strstr(id_parent, target_id) != NULL) {
+                *total_vol_entrant += vol;
+            }
+            else if (strstr(id_enfant, target_id) != NULL) {
+                *total_vol_entrant += vol;
+            }
 
-// void leaks(char* db_path, char* target_factory_id) {
-//     FILE* file = fopen(db_path, "r");
-//     if (file == NULL){
-//         return;
-//     }
-//     NodeIndex* index = NULL;
-//     NetworkComponent* root_factory = NULL;
-//     double total_captured_for_factory = 0.0;
-//     char line[1024];
+            if (strcmp(id_parent, "-") != 0 && strcmp(id_enfant, "-") != 0) {
+                NetworkComponent* p = find_or_create_component(&index_root, id_parent);
+                NetworkComponent* c = find_or_create_component(&index_root, id_enfant);
+                c->leak_percent = leak;
 
-//     while (fgets(line, sizeof(line), file)) {
-//         Facility* f = parserLine(line); 
-//         if(f == NULL){
-//             continue;
-//         }
+                int exists = 0;
+                NetworkComponent* check = p->first_child;
+                while(check) {
+                    if (check == c) { exists = 1; break; }
+                    check = check->next_sibling;
+                }
+                if (!exists) {
+                    c->next_sibling = p->first_child;
+                    p->first_child = c;
+                }
+            }
+        }
+        free(tmp);
+    }
+    fclose(fichier);
+    return index_root;
+}
 
-//         NetworkComponent* parent = find_or_create_component(&index, f->parent_id, NONE);
-//         NetworkComponent* child = find_or_create_component(&index, f->id, f->type);
+void leaks(char* db_path, char* target_id) {
+    double vol_depart = 0;
+    NodeIndex* index = chargerReseauLeaks(db_path, target_id, &vol_depart);
 
-//         link_components(parent, child, f->leak);
+    NetworkComponent* start = rechercher_composant_par_id(index, target_id);
 
-   
-//         if (strcmp(child->id, target_factory_id) == 0 && f->type == FACILITY_COMPLEX) {
-//             root_factory = child;
-//         }
+    if (start && vol_depart > 0) {
+        double vol_final = calculate_recursive_volume(start, vol_depart);
+        double total_perdu = (vol_depart - vol_final);
+
+        FILE* out = fopen("data/leaks.dat", "a");
+        if (out) {
+            fprintf(out, "%s;%.3f M.m3\n", start->id, total_perdu / 1000.0);
+            fclose(out);
+        }
         
-//         if (strcmp(f->parent_id, target_factory_id) != 0 && strcmp(f->id, target_factory_id) == 0) {
-//              total_captured_for_factory += f->volume_traite; 
-//         }
-
-//         free(f);
-//     }
-
-//     if (root_factory) {
-//         double lost_volume = calculate_total_leaks(root_factory, total_captured_for_factory);
-//         printf("Total volume lost for %s: %.3f M.m3\n", target_factory_id, lost_volume);
-//     } else {
-//         printf("-1\n"); 
-//     }
-
-//     fclose(file);
-// }
-
-
+        printf("--- Resultats Fuites ---\n");
+        printf("ID : %s\n", start->id);
+        printf("Volume initial : %.2f\n", vol_depart);
+        printf("Volume final : %.2f\n", vol_final);
+        // Ajout de l'unité sur le terminal
+        printf("Pertes totales : %.3f M.m3\n", total_perdu / 1000.0);
+    } else {
+        if (start == NULL) {
+            printf("Erreur : L'ID '%s' n'existe pas.\n", target_id);
+        } else {
+            printf("Erreur : Volume nul pour '%s'.\n", target_id);
+        }
+    }
+    freeAll(index);
+}
