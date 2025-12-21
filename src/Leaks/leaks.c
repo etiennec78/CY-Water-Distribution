@@ -108,20 +108,20 @@ void leaks(char* db_path, char* target_id) {
 
     if (start && vol_depart > 0) {
         double vol_final = calculate_recursive_volume(start, vol_depart);
-        double total_perdu = (vol_depart - vol_final);
+        double total_perdu = (vol_depart - vol_final) / 1000.0;
 
         FILE* out = fopen("data/leaks.dat", "a");
         if (out) {
-            fprintf(out, "%s;%.3f M.m3\n", start->id, total_perdu / 1000.0);
+            fprintf(out, "%s;%.3f M.m3\n", start->id, total_perdu);
             fclose(out);
         }
         
         printf("--- Resultats Fuites ---\n");
         printf("ID : %s\n", start->id);
-        printf("Volume initial : %.2f\n", vol_depart);
-        printf("Volume final : %.2f\n", vol_final);
+        printf("Volume initial : %.2f M.m3\n", vol_depart / 1000.0);
+        printf("Volume final : %.2f M.m3\n", vol_final / 1000.0);
         // Ajout de l'unité sur le terminal
-        printf("Pertes totales : %.3f M.m3\n", total_perdu / 1000.0);
+        printf("Pertes totales : %.3f M.m3\n", total_perdu);
     } else {
         if (start == NULL) {
             printf("Erreur : L'ID '%s' n'existe pas.\n", target_id);
