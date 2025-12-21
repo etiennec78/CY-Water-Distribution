@@ -110,9 +110,22 @@ void leaks(char* db_path, char* target_id) {
         double vol_final = calculate_recursive_volume(start, vol_depart);
         double total_perdu = (vol_depart - vol_final) / 1000.0;
 
+        int add_header = 0;
+        FILE* check = fopen("data/leaks.dat", "r");
+        if (check == NULL) {
+            add_header = 1;
+        } else {
+            fseek(check, 0, SEEK_END);
+            if (ftell(check) == 0) add_header = 1;
+            fclose(check);
+        }
+
         FILE* out = fopen("data/leaks.dat", "a");
         if (out) {
-            fprintf(out, "%s;%.3f M.m3\n", start->id, total_perdu);
+            if (add_header) {
+                fprintf(out, "identifier;Leak volume (M.m3.year-1)\n");
+            }
+            fprintf(out, "%s;%.3f\n", start->id, total_perdu);
             fclose(out);
         }
         
