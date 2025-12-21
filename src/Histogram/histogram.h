@@ -7,4 +7,4 @@ typedef struct {
     int length;
 } GetterList;
 
-void histogramme(char* db_path, char* histo_type);
+void histogram(char* db_path, char* histo_type);

@@ -13,27 +13,27 @@ typedef enum {
 typedef struct Facility {
     char id[50];
     char parent_id[50];
-    LineType type_ligne;
+    LineType line_type;
     double volume;
     double leak;
 
-    double capacite_max;
-    double volume_traite;
-    double volume_capte;
-    double volume_perdu;
+    double max_capacity;
+    double treated_volume;
+    double captured_volume;
+    double lost_volume;
     
-    struct Facility* droite;
-    struct Facility* gauche;
+    struct Facility* right;
+    struct Facility* left;
 
-    int equilibre;
+    int balance;
 } Facility;
 
 typedef struct {
     char* id;
-    double capacite_max; 
-    double volume_traite;
-    double volume_capte;
-} Resultat_Histo;
+    double max_capacity; 
+    double treated_volume;
+    double captured_volume;
+} HistoResult;
 
 // if more than 2 childs
 typedef struct NetworkComponent {

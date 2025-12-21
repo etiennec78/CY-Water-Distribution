@@ -1,20 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "histogramme.h"
+#include "histogram.h"
 #include "../Data/avl_histo.h"
 
 
-double get_capacite_max(Facility* f) {
-    return f->capacite_max;
+double get_max_capacity(Facility* f) {
+    return f->max_capacity;
 }
 
-double get_volume_capte(Facility* f) {
-    return f->volume_capte;
+double get_captured_volume(Facility* f) {
+    return f->captured_volume;
 }
 
-double get_volume_traite(Facility* f) {
-    return f->volume_traite;
+double get_treated_volume(Facility* f) {
+    return f->treated_volume;
 }
 
 GetterList* create_getters(capacity_getter newGetter) {
@@ -42,23 +42,23 @@ void free_getters(GetterList* getters) {
 
 void print_avl_reverse(Facility* node, FILE* f, GetterList* getters) {
     if (node == NULL) return;
-    print_avl_reverse(node->droite, f, getters);
+    print_avl_reverse(node->right, f, getters);
 
     fprintf(f, "%s", node->id);
     for (int i=0; i<getters->length; i++) {
         fprintf(f, ";%f", getters->list[i](node));
     }
     fprintf(f, "\n");
-    print_avl_reverse(node->gauche, f, getters);
+    print_avl_reverse(node->left, f, getters);
 }
 
-void histogramme(char* db_path, char* histo_type) {
+void histogram(char* db_path, char* histo_type) {
     Facility* avl;
     char* filePath;
     char* dataTitle;
     GetterList* getters = NULL;
 
-    avl = creerAVLMax(db_path);
+    avl = create_avl_max(db_path);
     if (avl == NULL) {
         fprintf(stderr, "Erreur: Impossible de créer l'arbre AVL (fichier vide ou mal formé)\n");
         return;
@@ -67,24 +67,24 @@ void histogramme(char* db_path, char* histo_type) {
     if (strcmp(histo_type, "max") == 0) {
         filePath = "data/vol_max.dat";
         dataTitle = "max volume(M.m3/year)";
-        getters = append_getter(getters, get_capacite_max);
+        getters = append_getter(getters, get_max_capacity);
     }
     else if (strcmp(histo_type, "src") == 0) {
         filePath = "data/vol_captation.dat";
         dataTitle = "source volume(M.m3/year)";
-        getters = append_getter(getters, get_volume_capte);
+        getters = append_getter(getters, get_captured_volume);
     }
     else if (strcmp(histo_type, "real") == 0) {
         filePath = "data/vol_traitement.dat";
         dataTitle = "real volume(M.m3/year)";
-        getters = append_getter(getters, get_volume_traite);
+        getters = append_getter(getters, get_treated_volume);
     }
     else if (strcmp(histo_type, "all") == 0) {
         filePath = "data/histo_all.dat";
         dataTitle = "max volume(M.m3/year);source volume(M.m3/year);real volume(M.m3/year)";
-        getters = append_getter(getters, get_capacite_max);
-        getters = append_getter(getters, get_volume_capte);
-        getters = append_getter(getters, get_volume_traite);
+        getters = append_getter(getters, get_max_capacity);
+        getters = append_getter(getters, get_captured_volume);
+        getters = append_getter(getters, get_treated_volume);
     }
     else{
         printf("Argument non valide");
@@ -94,7 +94,7 @@ void histogramme(char* db_path, char* histo_type) {
     FILE* f = fopen(filePath, "w");
     if (f == NULL) {
         perror("Erreur création fichier de sortie");
-        free_avl_usine(avl);
+        free_avl_facility(avl);
         return;
     }
 
@@ -107,6 +107,6 @@ void histogramme(char* db_path, char* histo_type) {
 
     fclose(f);
 
-    free_avl_usine(avl);
+    free_avl_facility(avl);
     free_getters(getters);
 }

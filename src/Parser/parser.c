@@ -5,8 +5,8 @@
 #include "../Data/avl_histo.h"
 
 
-LineType detectLineType(char** cols) {
-    // Vérification de sécurité : s'assurer que toutes les colonnes nécessaires sont présentes
+LineType detect_line_type(char** cols) {
+    // Security check: ensure all necessary columns are present
     for (int i = 0; i < COL_LEN; i++) {
         if (cols[i] == NULL) {
             return UNKNOWN;
@@ -26,20 +26,20 @@ LineType detectLineType(char** cols) {
     } else if (c1_dash) {
         return SOURCE_TO_FACTORY;
     } else if (c4_dash) {
-        return STORAGE_TO_CUST; //contient les 3 derniers types de ligne
+        return STORAGE_TO_CUST; //contains the last 3 line types
     }
     
     return UNKNOWN;
 }
 
-Facility* parserLine(char* lineStr, Facility* arbre_usines) {
+Facility* parse_line(char* lineStr, Facility* factory_tree) {
     char* cols[COL_LEN];
-    // Initialisation explicite à NULL pour éviter les accès mémoire invalides
+    // Explicit initialization to NULL to avoid invalid memory access
     for (int i = 0; i < COL_LEN; i++) {
         cols[i] = NULL;
     }
 
-    // Découpage de la ligne
+    // Split the line
     char* token = strtok(lineStr, ";");
     int i = 0;
     while (token != NULL && i < COL_LEN) {
@@ -49,24 +49,24 @@ Facility* parserLine(char* lineStr, Facility* arbre_usines) {
     }
 
     int h = 0;
-    LineType lineType = detectLineType(cols);
+    LineType lineType = detect_line_type(cols);
 
     switch(lineType) {
         case SOURCE_TO_FACTORY:
-            arbre_usines = inserer_usine(arbre_usines, cols[2], atof(cols[3]), atof(cols[4]), SOURCE_TO_FACTORY, &h);
+            factory_tree = insert_facility(factory_tree, cols[2], atof(cols[3]), atof(cols[4]), SOURCE_TO_FACTORY, &h);
             break;
 
         case FACTORY_ONLY:
-            arbre_usines = inserer_usine(arbre_usines, cols[1], atof(cols[3]), 0, FACTORY_ONLY, &h);
+            factory_tree = insert_facility(factory_tree, cols[1], atof(cols[3]), 0, FACTORY_ONLY, &h);
             break;
 
         case FACTORY_TO_STORAGE:
-            arbre_usines = inserer_usine(arbre_usines, cols[1], atof(cols[3]), 0, FACTORY_TO_STORAGE, &h);
+            factory_tree = insert_facility(factory_tree, cols[1], atof(cols[3]), 0, FACTORY_TO_STORAGE, &h);
             break;
 
         default:
             break;
     }
 
-    return arbre_usines;
+    return factory_tree;
 }

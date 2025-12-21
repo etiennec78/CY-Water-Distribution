@@ -110,11 +110,11 @@ NetworkComponent* find_or_create_component(NodeIndex** root, char* id) {
 }
 
 
-NetworkComponent* rechercher_composant_par_id(NodeIndex* root, char* target_id) {
+NetworkComponent* find_component_by_id(NodeIndex* root, char* target_id) {
   if (root == NULL) return NULL;
   int cmp = strcmp(target_id, root->id);
 
   if (cmp == 0) return root->component_ptr;
-  if (cmp < 0) return rechercher_composant_par_id(root->left, target_id);
-  return rechercher_composant_par_id(root->right, target_id);
+  if (cmp < 0) return find_component_by_id(root->left, target_id);
+  return find_component_by_id(root->right, target_id);
 }

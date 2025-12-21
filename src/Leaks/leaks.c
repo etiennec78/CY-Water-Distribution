@@ -43,20 +43,20 @@ double calculate_recursive_volume(NetworkComponent* current, double volume_in, c
     return total_delivered;
 }
 
-NodeIndex* chargerReseauLeaks(char* nom_fichier, char* target_id, double* total_vol_entrant) {
-    FILE* fichier = fopen(nom_fichier, "r");
-    if (fichier == NULL){
+NodeIndex* load_leaks_network(char* filename, char* target_id, double* total_vol_in) {
+    FILE* file = fopen(filename, "r");
+    if (file == NULL){
         return NULL;
     }
-    char ligne[1024];
+    char line[1024];
     NodeIndex* index_root = NULL;
-    *total_vol_entrant = 0.0;
+    *total_vol_in = 0.0;
 
-    while (fgets(ligne, sizeof(ligne), fichier)) {
-        ligne[strcspn(ligne, "\r\n")] = 0;
-        if (strlen(ligne) < 5) continue;
+    while (fgets(line, sizeof(line), file)) {
+        line[strcspn(line, "\r\n")] = 0;
+        if (strlen(line) < 5) continue;
 
-        char* tmp = strdup(ligne);
+        char* tmp = strdup(line);
         char* cols[6] = {NULL};
         int i = 0;
         char* token = strtok(tmp, ";");
@@ -68,7 +68,7 @@ NodeIndex* chargerReseauLeaks(char* nom_fichier, char* target_id, double* total_
 
         if (i >= 4) {
             char* id_parent = cols[1];
-            char* id_enfant = cols[2];
+            char* id_child = cols[2];
             double vol;
             if (strcmp(cols[3], "-") != 0) {
                 vol = atof(cols[3]);
@@ -84,15 +84,15 @@ NodeIndex* chargerReseauLeaks(char* nom_fichier, char* target_id, double* total_
             }
 
             if (strcmp(id_parent, target_id) == 0) {
-                *total_vol_entrant += vol;
+                *total_vol_in += vol;
             }
-            else if (strcmp(id_enfant, target_id) == 0) {
-                *total_vol_entrant += vol;
+            else if (strcmp(id_child, target_id) == 0) {
+                *total_vol_in += vol;
             }
 
-            if (strcmp(id_parent, "-") != 0 && strcmp(id_enfant, "-") != 0) {
+            if (strcmp(id_parent, "-") != 0 && strcmp(id_child, "-") != 0) {
                 NetworkComponent* p = find_or_create_component(&index_root, id_parent);
-                NetworkComponent* c = find_or_create_component(&index_root, id_enfant);
+                NetworkComponent* c = find_or_create_component(&index_root, id_child);
                 c->leak_percent = leak;
 
                 int exists = 0;
@@ -109,20 +109,20 @@ NodeIndex* chargerReseauLeaks(char* nom_fichier, char* target_id, double* total_
         }
         free(tmp);
     }
-    fclose(fichier);
+    fclose(file);
     return index_root;
 }
 
 void leaks(char* db_path, char* target_id) {
-    double vol_depart = 0;
-    NodeIndex* index = chargerReseauLeaks(db_path, target_id, &vol_depart);
+    double start_vol = 0;
+    NodeIndex* index = load_leaks_network(db_path, target_id, &start_vol);
 
-    NetworkComponent* start = rechercher_composant_par_id(index, target_id);
+    NetworkComponent* start = find_component_by_id(index, target_id);
 
-    if (start && vol_depart > 0) {
+    if (start && start_vol > 0) {
         LeakStats stats = {0, "", ""};
-        double vol_final = calculate_recursive_volume(start, vol_depart, NULL, &stats);
-        double total_perdu = (vol_depart - vol_final) / 1000.0;
+        double final_vol = calculate_recursive_volume(start, start_vol, NULL, &stats);
+        double total_lost = (start_vol - final_vol) / 1000.0;
 
         int add_header = 0;
         FILE* check = fopen("data/leaks.dat", "r");
@@ -139,16 +139,15 @@ void leaks(char* db_path, char* target_id) {
             if (add_header) {
                 fprintf(out, "identifier;Leak volume (M.m3.year-1)\n");
             }
-            fprintf(out, "%s;%.3f\n", start->id, total_perdu);
+            fprintf(out, "%s;%.3f\n", start->id, total_lost);
             fclose(out);
         }
         
         printf("--- Resultats Fuites ---\n");
         printf("ID : %s\n", start->id);
-        printf("Volume initial : %.2f M.m3\n", vol_depart / 1000.0);
-        printf("Volume final : %.2f M.m3\n", vol_final / 1000.0);
-        // Ajout de l'unité sur le terminal
-        printf("Pertes totales : %.3f M.m3\n", total_perdu);
+        printf("Volume initial : %.2f M.m3\n", start_vol / 1000.0);
+        printf("Volume final : %.2f M.m3\n", final_vol / 1000.0);
+        printf("Pertes totales : %.3f M.m3\n", total_lost);
 
         if (stats.max_leak_volume > 0) {
             printf("\n--- Pire fuite ---\n");

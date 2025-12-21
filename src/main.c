@@ -1,5 +1,5 @@
 #include <string.h>
-#include "Histogramme/histogramme.h"
+#include "Histogram/histogram.h"
 #include "Leaks/leaks.h"
 
 int main(int argc, char *argv[]) {
@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
     char *sub_arg = argv[3];
 
     if (strcmp(mode, "histo") == 0) {
-        histogramme(db_path, sub_arg);
+        histogram(db_path, sub_arg);
     }
 
     else if (strcmp(mode, "leaks") == 0) {
