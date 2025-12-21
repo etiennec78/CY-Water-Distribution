@@ -1,9 +1,9 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "Parser.h"
 #include "../Data/Data.h"
 #include "../Data/usine_avl.h"
+
 
 LineType detectLineType(char** cols) {
     if (cols == NULL || cols[0] == NULL || cols[1] == NULL || cols[2] == NULL) {
@@ -18,11 +18,11 @@ LineType detectLineType(char** cols) {
 
     if (c1_dash && c3_dash && c5_dash) {    
         return FACTORY_ONLY;
-    } else if(c1_dash && c4_dash){
+    } else if (c1_dash && c4_dash) {
         return FACTORY_TO_STORAGE;
-    } else if(c1_dash){
+    } else if (c1_dash) {
         return SOURCE_TO_FACTORY;
-    } else if(c4_dash){
+    } else if (c4_dash) {
         return STORAGE_TO_CUST; //contient les 3 derniers types de ligne
     }
     
@@ -51,10 +51,6 @@ Facility* parserLine(char* lineStr, Facility* arbre_usines) {
         case FACTORY_TO_STORAGE:
             arbre_usines = inserer_usine(arbre_usines, cols[1], atof(cols[3]), 0, FACTORY_TO_STORAGE, &h);
             break;
-
-        // case STORAGE_TO_CUST :
-        //     arbre_usines = inserer_usine(arbre_usines, cols[2], atof(cols[3]), 0, STORAGE_TO_CUST, &h);  // contient les 3 derniers types de ligne
-        //     break;
 
         default:
             break;

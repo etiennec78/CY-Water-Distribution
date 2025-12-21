@@ -94,7 +94,7 @@ class Plotter:
 
         if mode == "low":
             return sorted_data[:50]
-      
+
         return sorted_data[-10:]
 
     def plot(self) -> None:

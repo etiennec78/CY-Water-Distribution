@@ -74,7 +74,7 @@ void histogramme(char* db_path, char* histo_type) {
         dataTitle = "source volume(M.m3/year)";
         getters = append_getter(getters, get_volume_capte);
     }
-    else if (strcmp(histo_type, "real") == 0){
+    else if (strcmp(histo_type, "real") == 0) {
         filePath = "data/vol_traitement.dat";
         dataTitle = "real volume(M.m3/year)";
         getters = append_getter(getters, get_volume_traite);

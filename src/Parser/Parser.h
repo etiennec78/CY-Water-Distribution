@@ -6,8 +6,6 @@
 #define COL_CHECK_LEN 3
 #define FACTORY_STRUCT_LEN 6
 
-int countLine();
-LineType detectLineType(char** cols);
 Facility* parserLine(char* lineStr, Facility* arbre_usines);
 
 #endif
