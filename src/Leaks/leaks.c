@@ -5,10 +5,25 @@
 #include "../Data/common.h"
 #include "../Data/avl_leaks.h"
 
-double calculate_recursive_volume(NetworkComponent* current, double volume_in) {
+typedef struct {
+    double max_leak_volume;
+    char max_leak_id_upstream[50];
+    char max_leak_id_downstream[50];
+} LeakStats;
+
+double calculate_recursive_volume(NetworkComponent* current, double volume_in, char* parent_id, LeakStats* stats) {
     if (!current || volume_in <= 0) return 0;
 
-    double volume_out = volume_in * (1.0 - (current->leak_percent / 100.0));
+    double leak_amount = volume_in * (current->leak_percent / 100.0);
+    double volume_out = volume_in - leak_amount;
+
+    if (stats && parent_id && leak_amount > stats->max_leak_volume) {
+        stats->max_leak_volume = leak_amount;
+        strncpy(stats->max_leak_id_upstream, parent_id, 49);
+        strncpy(stats->max_leak_id_downstream, current->id, 49);
+        stats->max_leak_id_upstream[49] = '\0';
+        stats->max_leak_id_downstream[49] = '\0';
+    }
 
     if (current->first_child == NULL) {
         return volume_out;
@@ -24,7 +39,7 @@ double calculate_recursive_volume(NetworkComponent* current, double volume_in) {
     double total_delivered = 0;
     child = current->first_child;
     while (child) {
-        total_delivered += calculate_recursive_volume(child, volume_out / (double)count);
+        total_delivered += calculate_recursive_volume(child, volume_out / (double)count, current->id, stats);
         child = child->next_sibling;
     }
     return total_delivered;
@@ -107,7 +122,8 @@ void leaks(char* db_path, char* target_id) {
     NetworkComponent* start = rechercher_composant_par_id(index, target_id);
 
     if (start && vol_depart > 0) {
-        double vol_final = calculate_recursive_volume(start, vol_depart);
+        LeakStats stats = {0, "", ""};
+        double vol_final = calculate_recursive_volume(start, vol_depart, NULL, &stats);
         double total_perdu = (vol_depart - vol_final) / 1000.0;
 
         int add_header = 0;
@@ -135,6 +151,12 @@ void leaks(char* db_path, char* target_id) {
         printf("Volume final : %.2f M.m3\n", vol_final / 1000.0);
         // Ajout de l'unité sur le terminal
         printf("Pertes totales : %.3f M.m3\n", total_perdu);
+
+        if (stats.max_leak_volume > 0) {
+            printf("\n--- Pire fuite ---\n");
+            printf("Tronçon : %s -> %s\n", stats.max_leak_id_upstream, stats.max_leak_id_downstream);
+            printf("Volume perdu : %.3f M.m3\n", stats.max_leak_volume / 1000.0);
+        }
     } else {
         if (start == NULL) {
             printf("Erreur : L'ID '%s' n'existe pas.\n", target_id);
