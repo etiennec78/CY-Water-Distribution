@@ -113,6 +113,12 @@ if [[ ! $(python --version 2>/dev/null) ]]; then
     exit 10
 fi
 
+# Check that matplotlib is installed
+if [[ ! $(python -c "import matplotlib" 2>/dev/null) ]]; then
+    echo "Erreur: La bibliothèque Python matplotlib n'est pas installée : https://matplotlib.org/stable/install/index.html !"
+    exit 14
+fi
+
 # Get the location of the data file
 case "$3" in
     "max")
