@@ -12,10 +12,10 @@ help_message="""
 C-WildWater: Un script pour effectuer un histogramme
 des usines de traitement d'eau à partir d'un fichier .dat.
 
-Utilisation: ./cwildwater.sh <db_file> [arg] [subarg]
+Utilisation: ./cwildwater.sh <fichier_donnees> [arg] [sous_arg]
 
 Arguments:
-    histo [subarg]: Créé un histogramme à partir des sous-arguments suivants:
+    histo [type]: Créé un histogramme à partir des sous-arguments suivants:
         max: Volume maximal de traitement de l'usine
         src: Volume total capté par les sources
         real: Volume total réellement traité
