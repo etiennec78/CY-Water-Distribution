@@ -3,53 +3,7 @@
 #include <string.h>
 #include "leaks.h"
 #include "../Data/Data.h"
-
-
-void freeAll(NodeIndex* root) {
-    if (root == NULL) return;
-
-    freeAll(root->left);
-    freeAll(root->right);
-    if (root->component_ptr != NULL) {
-        free(root->component_ptr);
-    }
-    free(root);
-}
-NetworkComponent* find_or_create_component(NodeIndex** root, char* id) {
-    if (*root == NULL) {
-        NetworkComponent* new_comp = malloc(sizeof(NetworkComponent));
-        if (!new_comp) return NULL;
-        strncpy(new_comp->id, id, 49);
-        new_comp->id[49] = '\0';
-        new_comp->leak_percent = 0;
-        new_comp->first_child = NULL;
-        new_comp->next_sibling = NULL;
-
-        *root = malloc(sizeof(NodeIndex));
-        if (!(*root)) { free(new_comp); return NULL; }
-        strncpy((*root)->id, id, 49);
-        (*root)->id[49] = '\0';
-        (*root)->component_ptr = new_comp;
-        (*root)->left = (*root)->right = NULL;
-        (*root)->height = 1;
-        return new_comp;
-    }
-
-    int cmp = strcmp(id, (*root)->id);
-    if (cmp < 0) return find_or_create_component(&((*root)->left), id);
-    if (cmp > 0) return find_or_create_component(&((*root)->right), id);
-    return (*root)->component_ptr;
-}
-
-
-NetworkComponent* rechercher_composant_par_id(NodeIndex* root, char* target_id) {
-    if (root == NULL) return NULL;
-    if (strcmp(root->id, target_id) == 0) return root->component_ptr;
-    
-    NetworkComponent* res = rechercher_composant_par_id(root->left, target_id);
-    if (res != NULL) return res;
-    return rechercher_composant_par_id(root->right, target_id);
-}
+#include "../Data/avl_leaks.h"
 
 double calculate_recursive_volume(NetworkComponent* current, double volume_in) {
     if (!current || volume_in <= 0) return 0;

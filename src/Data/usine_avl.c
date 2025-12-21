@@ -9,22 +9,6 @@
 #define TYPE_SOURCE_USINE 2 
 #define TYPE_USINE_STOCKAGE 3
 
-int max(int a, int b) {
-    if (a > b) {
-        return a;
-    } else {
-        return b;
-    }
-}
-
-int min(int a, int b) {
-    if (a < b) {
-        return a;
-    } else {
-        return b;
-    }
-}
-
 Facility *rotation_gauche_usine(Facility *avl) {
     Facility *pivot = avl->droite;
     
