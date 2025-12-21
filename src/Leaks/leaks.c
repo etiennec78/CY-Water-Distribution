@@ -119,29 +119,29 @@ void leaks(char* db_path, char* target_id) {
 
     NetworkComponent* start = find_component_by_id(index, target_id);
 
-    if (start && start_vol > 0) {
+    int add_header = 0;
+    FILE* check = fopen("data/leaks.dat", "r");
+    if (check == NULL) {
+        add_header = 1;
+    } else {
+        fseek(check, 0, SEEK_END);
+        if (ftell(check) == 0) add_header = 1;
+        fclose(check);
+    }
+
+    FILE* out = fopen("data/leaks.dat", "a");
+    if (out) {
+        if (add_header) {
+            fprintf(out, "identifier;Leak volume (M.m3.year-1)\n");
+        }
+    }
+
+    if (start) {
         LeakStats stats = {0, "", ""};
         double final_vol = calculate_recursive_volume(start, start_vol, NULL, &stats);
         double total_lost = (start_vol - final_vol) / 1000.0;
 
-        int add_header = 0;
-        FILE* check = fopen("data/leaks.dat", "r");
-        if (check == NULL) {
-            add_header = 1;
-        } else {
-            fseek(check, 0, SEEK_END);
-            if (ftell(check) == 0) add_header = 1;
-            fclose(check);
-        }
-
-        FILE* out = fopen("data/leaks.dat", "a");
-        if (out) {
-            if (add_header) {
-                fprintf(out, "identifier;Leak volume (M.m3.year-1)\n");
-            }
-            fprintf(out, "%s;%.3f\n", start->id, total_lost);
-            fclose(out);
-        }
+        fprintf(out, "%s;%.3f\n", start->id, total_lost);
         
         printf("--- Resultats Fuites ---\n");
         printf("ID : %s\n", start->id);
@@ -155,11 +155,9 @@ void leaks(char* db_path, char* target_id) {
             printf("Volume perdu : %.3f M.m3\n", stats.max_leak_volume / 1000.0);
         }
     } else {
-        if (start == NULL) {
-            printf("Erreur : L'ID '%s' n'existe pas.\n", target_id);
-        } else {
-            printf("Erreur : Volume nul pour '%s'.\n", target_id);
-        }
+        printf("Erreur : L'ID '%s' n'existe pas.\n", target_id);
+        fprintf(out, "%s;-1\n", target_id);
     }
+    fclose(out);
     free_avl_leaks(index);
 }
