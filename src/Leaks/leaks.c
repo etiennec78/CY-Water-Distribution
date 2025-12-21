@@ -19,10 +19,8 @@ double calculate_recursive_volume(NetworkComponent* current, double volume_in, c
 
     if (stats && parent_id && leak_amount > stats->max_leak_volume) {
         stats->max_leak_volume = leak_amount;
-        strncpy(stats->max_leak_id_upstream, parent_id, 49);
-        strncpy(stats->max_leak_id_downstream, current->id, 49);
-        stats->max_leak_id_upstream[49] = '\0';
-        stats->max_leak_id_downstream[49] = '\0';
+        snprintf(stats->max_leak_id_upstream, 50, "%s", parent_id);
+        snprintf(stats->max_leak_id_downstream, 50, "%s", current->id);
     }
 
     if (current->first_child == NULL) {
