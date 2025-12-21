@@ -18,7 +18,7 @@ LineType detect_line_type(char** cols) {
     int c4_dash = (strcmp(cols[3], "-") == 0);
     int c5_dash = (strcmp(cols[4], "-") == 0);
     
-
+    // Determine line type based on which columns contain "-"
     if (c1_dash && c3_dash && c5_dash) {    
         return FACTORY_ONLY;
     } else if (c1_dash && c4_dash) {
@@ -51,16 +51,20 @@ Facility* parse_line(char* lineStr, Facility* factory_tree) {
     int h = 0;
     LineType lineType = detect_line_type(cols);
 
+    // Insert into AVL tree based on line type
     switch(lineType) {
         case SOURCE_TO_FACTORY:
+            // ID is in col 2, Volume in col 3, Leak in col 4
             factory_tree = insert_facility(factory_tree, cols[2], atof(cols[3]), atof(cols[4]), SOURCE_TO_FACTORY, &h);
             break;
 
         case FACTORY_ONLY:
+            // ID is in col 1, Capacity in col 3
             factory_tree = insert_facility(factory_tree, cols[1], atof(cols[3]), 0, FACTORY_ONLY, &h);
             break;
 
         case FACTORY_TO_STORAGE:
+            // ID is in col 1, Volume in col 3
             factory_tree = insert_facility(factory_tree, cols[1], atof(cols[3]), 0, FACTORY_TO_STORAGE, &h);
             break;
 

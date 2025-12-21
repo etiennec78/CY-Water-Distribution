@@ -41,6 +41,7 @@ int getBalance(NodeIndex *N) {
 }
 
 NodeIndex* balance_node(NodeIndex* node) {
+  // Update height of the current node
   node->height = 1 + max(getHeight(node->left), getHeight(node->right));
 
   int balance = getBalance(node);
@@ -76,6 +77,7 @@ void free_avl_leaks(NodeIndex* root) {
 }
 
 NetworkComponent* find_or_create_component(NodeIndex** root, char* id) {
+  // If the node is not found, create a new component and a new index node
   if (*root == NULL) {
     NetworkComponent* new_comp = malloc(sizeof(NetworkComponent));
     if (!new_comp) return NULL;
@@ -95,6 +97,7 @@ NetworkComponent* find_or_create_component(NodeIndex** root, char* id) {
     return new_comp;
   }
 
+  // Binary tree research
   int cmp = strcmp(id, (*root)->id);
   if (cmp < 0) {
     NetworkComponent* res = find_or_create_component(&((*root)->left), id);

@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 
 def check_args(args: list[str]) -> bool:
-    """Check that given arguments are valid.
+    """Check that given arguments are valid and print errors.
 
     Returns True if they are, False if not."""
 
@@ -88,7 +88,7 @@ class Plotter:
 
     def get_filtered_data(self, mode: str) -> list:
         """Get the 50 lowest values or 10 highest ones,
-        depending on the mode, sorted by capacity."""
+        depending on the mode, sorted by volume."""
 
         sorted_data = sorted(self.data.items(), key=lambda item: item[1][0])
 
@@ -108,14 +108,19 @@ class Plotter:
 
             xpoints = np.array([item[0] for item in filtered_data])
 
-            all_mode = len(filtered_data[0][1]) == 3
+            # If there are 3 columns, the histo type was "all"
+            if all_mode := len(filtered_data[0][1]) == 3:
 
-            if all_mode:
+                # Get the data for the y axis
                 raw_values = np.array([item[1] for item in filtered_data])
                 max_vol = raw_values[:, 0]
                 src_vol = raw_values[:, 1]
                 real_vol = raw_values[:, 2]
 
+                # Calculate components for stacked bars:
+                # Real: Volume actually treated
+                # Lost: Difference between source and treated (leaks)
+                # Unused: Difference between max capacity and source
                 y_real = real_vol
                 y_lost = src_vol - real_vol
                 y_unused = max_vol - src_vol
@@ -124,6 +129,8 @@ class Plotter:
                 colors = ['blue', 'red', 'green']
                 labels = ['Real', 'Lost', 'Unused']
             else:
+
+                # Get the data for the y axis (with default colors)
                 ypoints = np.array([item[1] for item in filtered_data])
                 colors = None
 
@@ -131,6 +138,7 @@ class Plotter:
 
             bottom = np.zeros(len(xpoints))
 
+            # Draw all bars on the y axis, while shifting the bottom up at each iteration
             for i in range(ypoints.shape[1]):
                 color = colors[i] if colors else None
                 label = labels[i] if all_mode and i < len(labels) else None
@@ -140,6 +148,7 @@ class Plotter:
             if all_mode:
                 plt.legend()
 
+            # Set the labels and save to png
             plt.title(f"Plant data (50 {mode}est)")
             plt.ylabel("Volume (M.m3)")
             plt.xlabel("Plant IDs")

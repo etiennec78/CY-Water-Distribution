@@ -40,6 +40,7 @@ void free_getters(GetterList* getters) {
     free(getters);
 }
 
+// Go through the AVL in reverse order to print the facilities in descending order based on their IDs
 void print_avl_reverse(Facility* node, FILE* f, GetterList* getters) {
     if (node == NULL) return;
     print_avl_reverse(node->right, f, getters);
@@ -52,6 +53,7 @@ void print_avl_reverse(Facility* node, FILE* f, GetterList* getters) {
     print_avl_reverse(node->left, f, getters);
 }
 
+// Generate a .dat file containing data for drawing an histogram
 void histogram(char* db_path, char* histo_type) {
     Facility* avl;
     char* filePath;
@@ -64,6 +66,7 @@ void histogram(char* db_path, char* histo_type) {
         return;
     }
 
+    // Set the file to store the data, the title of the csv headers, and append getters to retrieve the data in a loop
     if (strcmp(histo_type, "max") == 0) {
         filePath = "data/vol_max.dat";
         dataTitle = "max volume(M.m3/year)";
@@ -86,7 +89,7 @@ void histogram(char* db_path, char* histo_type) {
         getters = append_getter(getters, get_captured_volume);
         getters = append_getter(getters, get_treated_volume);
     }
-    else{
+    else {
         printf("Argument non valide");
         return;
     }
@@ -98,6 +101,7 @@ void histogram(char* db_path, char* histo_type) {
         return;
     }
 
+    // Build and save the header
     char title[256] = "";
     strcat(title, "identifier;");
     strcat(title, dataTitle);
@@ -105,8 +109,8 @@ void histogram(char* db_path, char* histo_type) {
     fprintf(f, "%s", title);
     print_avl_reverse(avl, f, getters);
 
+    // Free all pointers
     fclose(f);
-
     free_avl_facility(avl);
     free_getters(getters);
 }

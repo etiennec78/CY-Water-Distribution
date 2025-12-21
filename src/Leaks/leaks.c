@@ -14,9 +14,11 @@ typedef struct {
 double calculate_recursive_volume(NetworkComponent* current, double volume_in, char* parent_id, LeakStats* stats) {
     if (!current || volume_in <= 0) return 0;
 
+    // Calculate leak amount and remaining volume
     double leak_amount = volume_in * (current->leak_percent / 100.0);
     double volume_out = volume_in - leak_amount;
 
+    // Track the maximum leak found so far
     if (stats && parent_id && leak_amount > stats->max_leak_volume) {
         stats->max_leak_volume = leak_amount;
         snprintf(stats->max_leak_id_upstream, 50, "%s", parent_id);
@@ -27,6 +29,7 @@ double calculate_recursive_volume(NetworkComponent* current, double volume_in, c
         return volume_out;
     }
 
+    // Count children to distribute volume evenly
     int count = 0;
     NetworkComponent* child = current->first_child;
     while (child) {
@@ -34,6 +37,7 @@ double calculate_recursive_volume(NetworkComponent* current, double volume_in, c
         child = child->next_sibling;
     }
 
+    // Distribute remaining volume to children recursively
     double total_delivered = 0;
     child = current->first_child;
     while (child) {
@@ -83,6 +87,7 @@ NodeIndex* load_leaks_network(char* filename, char* target_id, double* total_vol
                 leak = 0.0;
             }
 
+            // Accumulate input volume if the parent or child matches the target ID
             if (strcmp(id_parent, target_id) == 0) {
                 *total_vol_in += vol;
             }
@@ -90,11 +95,13 @@ NodeIndex* load_leaks_network(char* filename, char* target_id, double* total_vol
                 *total_vol_in += vol;
             }
 
+            // Build the network graph
             if (strcmp(id_parent, "-") != 0 && strcmp(id_child, "-") != 0) {
                 NetworkComponent* p = find_or_create_component(&index_root, id_parent);
                 NetworkComponent* c = find_or_create_component(&index_root, id_child);
                 c->leak_percent = leak;
 
+                // Add child to parent's list of children
                 int exists = 0;
                 NetworkComponent* check = p->first_child;
                 while(check) {
@@ -113,6 +120,7 @@ NodeIndex* load_leaks_network(char* filename, char* target_id, double* total_vol
     return index_root;
 }
 
+// Find the volume of leakage in the tree
 void leaks(char* db_path, char* target_id) {
     double start_vol = 0;
     NodeIndex* index = load_leaks_network(db_path, target_id, &start_vol);

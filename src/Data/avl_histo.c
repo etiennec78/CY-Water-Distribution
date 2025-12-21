@@ -17,6 +17,7 @@ Facility *left_rotate_facility(Facility *avl) {
     int balanceAVL = avl->balance;
     int balancePivot = pivot->balance;
 
+    // Update balance factors after rotaton
     avl->balance = balanceAVL - max(balancePivot, 0) - 1;
     pivot->balance = min(min(balanceAVL - 2, balanceAVL + balancePivot - 2), balancePivot - 1);
 
@@ -32,6 +33,7 @@ Facility *right_rotate_facility(Facility *avl) {
     int balanceAVL = avl->balance;
     int balancePivot = pivot->balance;
 
+    // Update balance factors after rotation
     avl->balance = balanceAVL - max(balancePivot, 0) + 1;
     pivot->balance = max(max(balanceAVL + 2, balanceAVL + balancePivot + 2), balancePivot + 1);
 
@@ -51,16 +53,17 @@ Facility *left_right_rotate_facility(Facility *n) {
 Facility *balance_tree(Facility *avl) {
     if (avl == NULL) return avl;
 
-    if (avl->balance > 1) { 
+    // Check if the tree is unbalanced
+    if (avl->balance > 1) {
         if (avl->right->balance >= 0) {
             return left_rotate_facility(avl);
-        } else { 
+        } else {
             return right_left_rotate_facility(avl);
         }
-    } else if (avl->balance < -1) { 
+    } else if (avl->balance < -1) {
         if (avl->left->balance <= 0) { 
             return right_rotate_facility(avl);
-        } else { 
+        } else {
             return left_right_rotate_facility(avl);
         }
     }
@@ -87,18 +90,20 @@ Facility *new_facility(char *id) {
     new_node->treated_volume = 0.0;
     new_node->captured_volume = 0.0;
     new_node->balance = 0;
-    
+
     return new_node;
 }
 
 void update_facility_values(Facility *node, double vol_info, double leak_percentage, LineType line_type) {
     if (line_type == FACTORY_ONLY) {
         node->max_capacity = vol_info / 1000.0;
-        node->line_type = FACTORY_ONLY; // Mark as factory
+        node->line_type = FACTORY_ONLY;
     } else if (line_type == SOURCE_TO_FACTORY) {
+        // Accumulate captured volume from source
         node->captured_volume += vol_info / 1000.0;
-        double volume_net_traite = (vol_info / 1000.0) * (1.0 - (leak_percentage / 100.0));
-        node->treated_volume += volume_net_traite;
+        // Calculate net treated volume
+        double treated_volume = (vol_info / 1000.0) * (1.0 - (leak_percentage / 100.0));
+        node->treated_volume += treated_volume;
     }
     // FACTORY_TO_STORAGE: do nothing
 }
