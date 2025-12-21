@@ -81,7 +81,7 @@ void histogramme(char* db_path, char* histo_type) {
     }
     else if (strcmp(histo_type, "all") == 0) {
         filePath = "data/histo_all.dat";
-        dataTitle = "identifier;max volume(M.m3/year);source volume(M.m3/year);real volume(M.m3/year)";
+        dataTitle = "max volume(M.m3/year);source volume(M.m3/year);real volume(M.m3/year)";
         getters = append_getter(getters, get_capacite_max);
         getters = append_getter(getters, get_volume_capte);
         getters = append_getter(getters, get_volume_traite);
