@@ -99,7 +99,7 @@ if [ ! -x cwildwater.sh ]; then
     exit 9
 fi
 
-./bin/cwildwater $@
+./bin/cwildwater "$@"
 
 # Check that the execution was successfull
 if [ $? -ne 0 ]; then

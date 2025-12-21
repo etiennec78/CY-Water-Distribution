@@ -44,7 +44,7 @@ NetworkComponent* find_or_create_component(NodeIndex** root, char* id) {
 
 NetworkComponent* rechercher_composant_par_id(NodeIndex* root, char* target_id) {
     if (root == NULL) return NULL;
-    if (strstr(root->id, target_id) != NULL) return root->component_ptr;
+    if (strcmp(root->id, target_id) == 0) return root->component_ptr;
     
     NetworkComponent* res = rechercher_composant_par_id(root->left, target_id);
     if (res != NULL) return res;
@@ -116,10 +116,10 @@ NodeIndex* chargerReseauLeaks(char* nom_fichier, char* target_id, double* total_
                 leak = 0.0;
             }
 
-            if (strstr(id_parent, target_id) != NULL) {
+            if (strcmp(id_parent, target_id) == 0) {
                 *total_vol_entrant += vol;
             }
-            else if (strstr(id_enfant, target_id) != NULL) {
+            else if (strcmp(id_enfant, target_id) == 0) {
                 *total_vol_entrant += vol;
             }
 
