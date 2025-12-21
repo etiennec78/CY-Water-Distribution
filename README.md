@@ -38,7 +38,7 @@ Arguments disponibles :
 #### Fuites (leaks) 💧
    Calcule les pertes d'eau pour une usine donnée sur l'ensemble de son réseau aval.
 
-   Usage : `./cwildwater.sh <fichier_donnees> leaks "<id_usine>"`
+   Utilisation : `./cwildwater.sh <fichier_donnees> leaks "<id_usine>"`
 
    Exemple :
    `./cwildwater.sh data/c-wildwater_v3.dat leaks "Facility complex #RH400057F"`
