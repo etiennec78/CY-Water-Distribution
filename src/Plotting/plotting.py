@@ -107,23 +107,43 @@ class Plotter:
             filtered_data = self.get_filtered_data(mode)
 
             xpoints = np.array([item[0] for item in filtered_data])
-            ypoints = np.array([item[1] for item in filtered_data])
+
+            all_mode = len(filtered_data[0][1]) == 3
+
+            if all_mode:
+                raw_values = np.array([item[1] for item in filtered_data])
+                max_vol = raw_values[:, 0]
+                src_vol = raw_values[:, 1]
+                real_vol = raw_values[:, 2]
+
+                y_real = real_vol
+                y_lost = src_vol - real_vol
+                y_unused = max_vol - src_vol
+
+                ypoints = np.column_stack((y_real, y_lost, y_unused))
+                colors = ['blue', 'red', 'green']
+                labels = ['Real', 'Lost', 'Unused']
+            else:
+                ypoints = np.array([item[1] for item in filtered_data])
+                colors = None
 
             plt.figure(figsize=(12, 6))
 
-            # Initialize the bottom of the bars to zero
             bottom = np.zeros(len(xpoints))
 
-            # Plot each layer of the stacked bar
             for i in range(ypoints.shape[1]):
-                plt.bar(xpoints, ypoints[:, i], bottom=bottom)
+                color = colors[i] if colors else None
+                label = labels[i] if all_mode and i < len(labels) else None
+                plt.bar(xpoints, ypoints[:, i], bottom=bottom, color=color, label=label)
                 bottom += ypoints[:, i]
 
-            # Add value labels on top of bars
-            for i, total in enumerate(bottom):
-                plt.text(i, total, round(total, 2), va="bottom", ha="center")
+            if all_mode:
+                plt.legend()
 
-            plt.xticks(rotation=45, ha="right")
+            plt.title(f"Plant data (50 {mode}est)")
+            plt.ylabel("Volume (M.m3)")
+            plt.xlabel("Plant IDs")
+            plt.xticks(rotation="vertical")
             plt.tight_layout()
             plt.savefig(self.get_output_path(mode))
 
