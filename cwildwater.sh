@@ -1,3 +1,11 @@
+print_exec_time () {
+    end=$(date +%s%N)
+    exec_time=$(( (end - start) / 1000000 ))
+
+    echo
+    echo "Info: Fin de l'exécution en $((exec_time))ms"
+}
+
 start=$(date +%s%N)
 
 help_message="""
@@ -33,12 +41,14 @@ done
 if [ $# -ne 3 ]; then
     echo "$help_message"
     echo "Erreur: Vous n'avez pas entré le nombre correct d'arguments !"
+    print_exec_time
     exit 1
 fi
 
 # Check that the database file exists
 if [ ! -f "$1" ]; then
     echo "Erreur: Le fichier de données '$1' n'existe pas !"
+    print_exec_time
     exit 2
 fi
 
@@ -48,6 +58,7 @@ case "$2" in ("histo"|"leaks")
     *)
         echo "$help_message"
         echo "Erreur: Votre argument '$2' n'est pas valide ! "
+        print_exec_time
         exit 3
     ;;
 esac
@@ -58,6 +69,7 @@ if [ "$2" = "histo" ]; then
         *)
             echo "$help_message"
             echo "Erreur: L'argument '$3' est invalide pour '$2' ! "
+            print_exec_time
             exit 4
         ;;
     esac
@@ -66,18 +78,21 @@ fi
 # Check that the factory exists in the file
 if [[ "$2" = "leaks" ]] && ! grep -q "$3" "$1"; then
     echo "Erreur: L'id d'usine '$3' n'a pas été trouvé dans le fichier $1";
+    print_exec_time
     exit 5
 fi
 
 # Check that the makefile is present
 if [ ! -f Makefile ]; then
     echo "Erreur: Impossible de trouver le makefile !"
+    print_exec_time
     exit 6
 fi
 
 # Check that the src dir is present
 if [ ! -d src ]; then
     echo "Erreur: Impossible de trouver les fichiers à compiler !"
+    print_exec_time
     exit 7
 fi
 
@@ -88,6 +103,7 @@ if [ ! -f bin/cwildwater ]; then
 
     if [ ! -f bin/cwildwater ]; then
         echo "Erreur: La compilation a échoué !"
+        print_exec_time
         exit 8
     fi
 fi
@@ -96,6 +112,7 @@ chmod +x bin/cwildwater
 
 if [ ! -x cwildwater.sh ]; then
     echo "Erreur: Le fichier binaire n'a pas pu être rendu exécutable !"
+    print_exec_time
     exit 9
 fi
 
@@ -104,6 +121,8 @@ fi
 # Check that the execution was successfull
 if [ $? -ne 0 ]; then
     echo "Erreur: Un problème est survenu en exécutant le binaire !"
+    print_exec_time
+    exit 15
 fi
 
 # Get the location of the data file
@@ -130,18 +149,21 @@ if [[ "$file_name" != "" ]]; then
     # Check that the output file exists
     if [ ! -f "$file_name.dat" ]; then
         echo "Erreur: Le fichier de données n'a pas été créé !"
+        print_exec_time
         exit 11
     fi
 
     # Check that Python is installed
     if [[ ! $(python --version 2>/dev/null) ]]; then
         echo "Erreur: Python n'est pas installé !"
+        print_exec_time
         exit 10
     fi
 
     # Check that matplotlib is installed
     if ! $(python -c "import matplotlib" 2>/dev/null); then
         echo "Erreur: La bibliothèque Python matplotlib n'est pas installée : https://matplotlib.org/stable/install/index.html !"
+        print_exec_time
         exit 14
     fi
 
@@ -150,6 +172,7 @@ if [[ "$file_name" != "" ]]; then
     # Check that the execution was successfull
     if [ $? -ne 0 ]; then
         echo "Erreur: Un problème est survenu en essayant de créer l'histogramme !"
+        print_exec_time
         exit 12
     fi
 
@@ -158,6 +181,7 @@ if [[ "$file_name" != "" ]]; then
         png_file="${file_name}_${suffix}.png"
         if [ ! -f "$png_file" ]; then
             echo "Erreur: Un des histogrammes n'a pas été généré !"
+            print_exec_time
             exit 13
         fi
 
@@ -165,7 +189,4 @@ if [[ "$file_name" != "" ]]; then
     done
 fi
 
-end=$(date +%s%N)
-exec_time=$(( (end - start) / 1000000 ))
-
-echo "Info: Fin de l'exécution en $((exec_time))ms"
+print_exec_time
