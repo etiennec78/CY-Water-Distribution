@@ -6,8 +6,11 @@
 
 
 LineType detectLineType(char** cols) {
-    if (cols == NULL || cols[0] == NULL || cols[1] == NULL || cols[2] == NULL) {
-        return UNKNOWN;
+    // Vérification de sécurité : s'assurer que toutes les colonnes nécessaires sont présentes
+    for (int i = 0; i < COL_LEN; i++) {
+        if (cols[i] == NULL) {
+            return UNKNOWN;
+        }
     }
 
     int c1_dash = (strcmp(cols[0], "-") == 0);
@@ -31,9 +34,18 @@ LineType detectLineType(char** cols) {
 
 Facility* parserLine(char* lineStr, Facility* arbre_usines) {
     char* cols[COL_LEN];
-    for (int i=0; i<COL_LEN; i++) {
-        cols[i] = strtok(lineStr, ";");
-        lineStr = NULL;
+    // Initialisation explicite à NULL pour éviter les accès mémoire invalides
+    for (int i = 0; i < COL_LEN; i++) {
+        cols[i] = NULL;
+    }
+
+    // Découpage de la ligne
+    char* token = strtok(lineStr, ";");
+    int i = 0;
+    while (token != NULL && i < COL_LEN) {
+        cols[i] = token;
+        token = strtok(NULL, ";");
+        i++;
     }
 
     int h = 0;
