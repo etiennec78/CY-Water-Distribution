@@ -26,7 +26,7 @@ Arguments:
     for arg in args:
         if arg in ["help", "--help", "-h"]:
             print(help_message)
-            return True
+            sys.exit(0)
     if len(args) < 2:
         error_msg = "Pas assez d'arguments"
     elif len(args) > 2:
