@@ -15,7 +15,6 @@ void freeAll(NodeIndex* root) {
     }
     free(root);
 }
-
 NetworkComponent* find_or_create_component(NodeIndex** root, char* id) {
     if (*root == NULL) {
         NetworkComponent* new_comp = malloc(sizeof(NetworkComponent));
@@ -79,7 +78,7 @@ double calculate_recursive_volume(NetworkComponent* current, double volume_in) {
 
 NodeIndex* chargerReseauLeaks(char* nom_fichier, char* target_id, double* total_vol_entrant) {
     FILE* fichier = fopen(nom_fichier, "r");
-    if (fichier == NULL) {
+    if (fichier == NULL){
         return NULL;
     }
     char ligne[1024];
@@ -178,4 +177,3 @@ void leaks(char* db_path, char* target_id) {
     }
     freeAll(index);
 }
-
