@@ -106,19 +106,6 @@ if [ $? -ne 0 ]; then
     echo "Erreur: Un problème est survenu en exécutant le binaire !"
 fi
 
-
-# Check that Python is installed
-if [[ ! $(python --version 2>/dev/null) ]]; then
-    echo "Erreur: Python n'est pas installé !"
-    exit 10
-fi
-
-# Check that matplotlib is installed
-if [[ ! $(python -c "import matplotlib" 2>/dev/null) ]]; then
-    echo "Erreur: La bibliothèque Python matplotlib n'est pas installée : https://matplotlib.org/stable/install/index.html !"
-    exit 14
-fi
-
 # Get the location of the data file
 case "$3" in
     "max")
@@ -144,6 +131,18 @@ if [[ "$file_name" != "" ]]; then
     if [ ! -f "$file_name.dat" ]; then
         echo "Erreur: Le fichier de données n'a pas été créé !"
         exit 11
+    fi
+
+    # Check that Python is installed
+    if [[ ! $(python --version 2>/dev/null) ]]; then
+        echo "Erreur: Python n'est pas installé !"
+        exit 10
+    fi
+
+    # Check that matplotlib is installed
+    if [[ ! $(python -c "import matplotlib" 2>/dev/null) ]]; then
+        echo "Erreur: La bibliothèque Python matplotlib n'est pas installée : https://matplotlib.org/stable/install/index.html !"
+        exit 14
     fi
 
     python src/Plotting/plotting.py "$file_name.dat"
