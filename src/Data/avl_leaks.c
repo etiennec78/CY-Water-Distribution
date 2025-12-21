@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include "Data.h"
+#include "common.h"
 
 int getHeight(NodeIndex *N) {
   if (N == NULL)

@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h> 
-#include "usine_avl.h"       
-#include "../Parser/Parser.h" 
-#include "Data.h"
+#include <string.h>
+#include "common.h"
+#include "../Parser/parser.h"
 
 #define TYPE_CAPACITE_MAX 1 
 #define TYPE_SOURCE_USINE 2 

@@ -1,5 +1,5 @@
-#ifndef DATA_H
-#define DATA_H
+#ifndef COMMON_H
+#define COMMON_H
 
 
 typedef enum {

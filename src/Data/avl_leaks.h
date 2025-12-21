@@ -1,7 +1,7 @@
-#ifndef USINE_AVL_H
-#define USINE_AVL_H
+#ifndef AVL_LEAKS_H
+#define AVL_LEAKS_H
 
-#include "Data.h"
+#include "common.h"
 
 NetworkComponent* find_or_create_component(NodeIndex** root, char* id);
 NetworkComponent* rechercher_composant_par_id(NodeIndex* root, char* target_id);

@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
-#include "Parser.h"
-#include "../Data/Data.h"
-#include "../Data/usine_avl.h"
+#include "parser.h"
+#include "../Data/common.h"
+#include "../Data/avl_histo.h"
 
 
 LineType detectLineType(char** cols) {

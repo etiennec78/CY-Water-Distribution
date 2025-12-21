@@ -1,6 +1,6 @@
 #ifndef PARSER_H
 #define PARSER_H
-#include "../Data/Data.h"
+#include "../Data/common.h"
 
 #define COL_LEN 5
 #define COL_CHECK_LEN 3

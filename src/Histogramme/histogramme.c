@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "histogramme.h"
-#include "../Data/usine_avl.h"
+#include "../Data/avl_histo.h"
 
 
 double get_capacite_max(Facility* f) {

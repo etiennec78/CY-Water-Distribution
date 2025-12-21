@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "leaks.h"
-#include "../Data/Data.h"
+#include "../Data/common.h"
 #include "../Data/avl_leaks.h"
 
 double calculate_recursive_volume(NetworkComponent* current, double volume_in) {
@@ -129,5 +129,5 @@ void leaks(char* db_path, char* target_id) {
             printf("Erreur : Volume nul pour '%s'.\n", target_id);
         }
     }
-    freeAll(index);
+    free_avl_leaks(index);
 }

@@ -1,4 +1,4 @@
-#include "../Data/Data.h"
+#include "../Data/common.h"
 
 typedef double (*capacity_getter)(Facility* f);
 
