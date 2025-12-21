@@ -140,7 +140,7 @@ if [[ "$file_name" != "" ]]; then
     fi
 
     # Check that matplotlib is installed
-    if [[ ! $(python -c "import matplotlib" 2>/dev/null) ]]; then
+    if ! $(python -c "import matplotlib" 2>/dev/null); then
         echo "Erreur: La bibliothèque Python matplotlib n'est pas installée : https://matplotlib.org/stable/install/index.html !"
         exit 14
     fi
